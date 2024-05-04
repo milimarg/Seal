@@ -2,3 +2,4 @@ rom_files
 seal
 *.o
 .idea
+tests

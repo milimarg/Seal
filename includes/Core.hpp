@@ -1,5 +1,11 @@
 #ifndef SEAL_CORE_HPP
     #define SEAL_CORE_HPP
+    #include <map>
+    #include <vector>
+    #include <string>
+
+    #define BASE_STACK_PTR 0x0100
+    #define BYTE_CONCAT(h, l) (h << 8) | l
 
 class Bus;
 
@@ -16,19 +22,24 @@ public:
         N = (1 << 7)  // Negative
     };
 
-    uint8_t a = 0x00;        // Accumulator Register
-    uint8_t x = 0x00;        // X Register
-    uint8_t y = 0x00;        // Y Register
-    uint8_t stackPtr = 0x00; // Stack Pointer (point to the location in the bus)
-    uint8_t pc = 0x00;       // Program Counter
-    uint8_t status = 0x00;   // Status Register
+    uint8_t a = 0x00;            // Accumulator Register
+    uint8_t x = 0x00;            // X Register
+    uint8_t y = 0x00;            // Y Register
+    uint8_t stackPtr = 0x00;     // Stack Pointer (point to the location in the bus)
+    uint16_t pc = 0x0000;        // Program Counter
+    uint8_t status = 0x00;       // Status Register
 
     Core();
     ~Core();
 
     void connectBus(Bus *n);
 
-    // Docs: https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/olc6502.cpp
+    void clock();
+    void reset();
+    void irq(); // Interrupt Request Signal
+    void nmi(); // Non Maskable Interrupt Request Signal
+
+    // Docs: https://github.com/OneLoneCoder/olcNES/blob/master/Part%232%20-%20CPU/Core.cpp
     // Addressing modes
     uint8_t IMP(); // Implied
     uint8_t IMM(); // Immediate
@@ -44,35 +55,76 @@ public:
     uint8_t IZY(); // Indirect with Y register offset
 
     // Op Codes
-    uint8_t ADC();	uint8_t AND();	uint8_t ASL();	uint8_t BCC();
-    uint8_t BCS();	uint8_t BEQ();	uint8_t BIT();	uint8_t BMI();
-    uint8_t BNE();	uint8_t BPL();	uint8_t BRK();	uint8_t BVC();
-    uint8_t BVS();	uint8_t CLC();	uint8_t CLD();	uint8_t CLI();
-    uint8_t CLV();	uint8_t CMP();	uint8_t CPX();	uint8_t CPY();
-    uint8_t DEC();	uint8_t DEX();	uint8_t DEY();	uint8_t EOR();
-    uint8_t INC();	uint8_t INX();	uint8_t INY();	uint8_t JMP();
-    uint8_t JSR();	uint8_t LDA();	uint8_t LDX();	uint8_t LDY();
-    uint8_t LSR();	uint8_t NOP();	uint8_t ORA();	uint8_t PHA();
-    uint8_t PHP();	uint8_t PLA();	uint8_t PLP();	uint8_t ROL();
-    uint8_t ROR();	uint8_t RTI();	uint8_t RTS();	uint8_t SBC();
-    uint8_t SEC();	uint8_t SED();	uint8_t SEI();	uint8_t STA();
-    uint8_t STX();	uint8_t STY();	uint8_t TAX();	uint8_t TAY();
-    uint8_t TSX();	uint8_t TXA();	uint8_t TXS();	uint8_t TYA();
+    uint8_t ADC();
+    uint8_t AND(); // And (+)
+    uint8_t ASL();
+    uint8_t BCC(); // Branching Carry Clear
+    uint8_t BCS(); // Branching
+    uint8_t BEQ(); // Branching if Equal
+    uint8_t BIT();
+    uint8_t BMI(); // Branch if Negative
+    uint8_t BNE(); // Branch if Not Equal
+    uint8_t BPL(); // Branch if Positive
+    uint8_t BRK(); // Break
+    uint8_t BVC(); // Branch if Overflow Clear
+    uint8_t BVS(); // Branch if Overflow Set
+    uint8_t CLC(); // Clear Carry Flag
+    uint8_t CLD(); // Clear Decimal Flag
+    uint8_t CLI(); // Disable Interrupts / Clear Interrupt Flag
+    uint8_t CLV(); // Clear Overflow Flag
+    uint8_t CMP(); // Compare Accumulator
+    uint8_t CPX(); // Compare X Register
+    uint8_t CPY(); // Compare Y Register
+    uint8_t DEC(); // Decrement Value at Memory Location
+    uint8_t DEX(); // Decrement X Register
+    uint8_t DEY(); // Decrement Y Register
+    uint8_t EOR(); // Bitwise Logic XOR
+    uint8_t INC(); // Increment Value at Memory Location
+    uint8_t INX(); // Increment X Register
+    uint8_t INY(); // Increment Y Register
+    uint8_t JMP(); // Jump To Location
+    uint8_t JSR(); // Jump To Sub-Routine
+    uint8_t LDA(); // Load The Accumulator
+    uint8_t LDX(); // Load The X Register
+    uint8_t LDY(); // Load The Y Register
+    uint8_t LSR();
+    uint8_t NOP(); // https://www.nesdev.org/wiki/CPU_unofficial_opcodes
+    uint8_t ORA(); // Bitwise Logic OR
+    uint8_t PHA(); // Push Accumulator to Stack
+    uint8_t PHP(); // Push Status Register to Stack
+    uint8_t PLA(); // Pop Accumulator off Stack
+    uint8_t PLP(); // Pop Status Register off Stack
+    uint8_t ROL();
+    uint8_t ROR();
+    uint8_t RTI();
+    uint8_t RTS();
+    uint8_t SBC();
+    uint8_t SEC(); // Set Carry Flag
+    uint8_t SED(); // Set Decimal Flag
+    uint8_t SEI(); // Set Interrupt Flag / Enable Interrupts
+    uint8_t STA(); // Store Accumulator at Address
+    uint8_t STX(); // Store X Register at Address
+    uint8_t STY(); // Store Y Register at Address
+    uint8_t TAX(); // Transfer Accumulator to X Register
+    uint8_t TAY(); // Transfer Accumulator to Y Register
+    uint8_t TSX(); // Transfer Stack Pointer to X Register
+    uint8_t TXA(); // Transfer X Register to Accumulator
+    uint8_t TXS(); // Transfer X Register to Stack Pointer
+    uint8_t TYA(); // Transfer Y Register to Accumulator
 
-    uint8_t XXX();
+    uint8_t XXX(); // Illegal opcodes
 
-    void clock();
-    void reset();
-    void irq(); // Interrupt Request Signal
-    void nmi(); // Non Maskable Interrupt Request Signal
+    bool complete();
+
+    std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
 
     uint8_t fetch();
     uint8_t fetched = 0x00;
-
+    uint16_t temp = 0x0000;
     uint16_t addr_abs = 0x0000;
     uint16_t addr_rel = 0x0000;
     uint8_t opcode = 0x00;
-    uint8_t cycle = 0;
+    uint8_t cycles = 0;
 
 private:
     Bus *bus = nullptr;
