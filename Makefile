@@ -1,6 +1,10 @@
 SRC		=	tests/test.cpp \
 			src/Bus.cpp \
-			src/Core.cpp
+			src/Core.cpp \
+			src/Ppu.cpp \
+			src/Cartridge.cpp \
+			src/Mapper/Mapper.cpp \
+			src/Mapper/Mapper000.cpp
 
 OBJ		=	$(SRC:.cpp=.o)
 
