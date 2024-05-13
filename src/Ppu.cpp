@@ -319,7 +319,6 @@ void Ppu::ppuWrite(uint16_t addr, uint8_t data)
 			if (addr >= 0x0C00 && addr <= 0x0FFF)
 				tblName[1][addr & 0x03FF] = data;
 		} else if (cart->mirror == Cartridge::MIRROR::HORIZONTAL) {
-			// Horizontal
 			if (addr >= 0x0000 && addr <= 0x03FF)
 				tblName[0][addr & 0x03FF] = data;
 			if (addr >= 0x0400 && addr <= 0x07FF)
@@ -381,7 +380,6 @@ void Ppu::clock()
 
 	auto IncrementScrollY = [&]() {
 		if (mask.render_background || mask.render_sprites) {
-			// If possible, just increment the fine y offset
 			if (vram_addr.fine_y < 7) {
 				vram_addr.fine_y++;
 			} else {

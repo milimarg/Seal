@@ -14,7 +14,7 @@ public:
 public:
     Core cpu;
     Ppu ppu;
-    std::shared_ptr<Cartridge> cart;
+    std::shared_ptr<Cartridge> _cartridge;
     uint8_t cpuRam[2048];
     uint8_t controller[2];
 

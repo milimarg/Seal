@@ -58,8 +58,7 @@ void Core::reset()
 
 void Core::irq()
 {
-	if (GetFlag(I) == 0)
-	{
+	if (GetFlag(I) == 0) {
 		write(0x0100 + stackPtr, (pc >> 8) & 0x00FF);
 		stackPtr--;
 		write(0x0100 + stackPtr, pc & 0x00FF);
@@ -103,8 +102,7 @@ void Core::nmi()
 
 void Core::clock()
 {
-	if (cycles == 0)
-	{
+	if (cycles == 0) {
 		opcode = read(pc);
 		
 		SetFlag(U, true);
@@ -236,12 +234,9 @@ uint8_t Core::IND()
 
 	uint16_t ptr = (ptr_hi << 8) | ptr_lo;
 
-	if (ptr_lo == 0x00FF) // Simulate page boundary hardware bug
-	{
+	if (ptr_lo == 0x00FF) { // Simulate page boundary hardware bug
 		addr_abs = (read(ptr & 0xFF00) << 8) | read(ptr + 0);
-	}
-	else // Behave normally
-	{
+	} else {
 		addr_abs = (read(ptr + 1) << 8) | read(ptr + 0);
 	}
 	return 0;
@@ -286,42 +281,29 @@ uint8_t Core::fetch()
 
 uint8_t Core::ADC()
 {
-	// Grab the data that we are adding to the accumulator
 	fetch();
-	
-	// Add is performed in 16-bit domain for emulation to capture any
-	// carry bit, which will exist in bit 8 of the 16-bit word
+
 	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)GetFlag(C);
 	
-	// The carry flag out exists in the high byte bit 0
 	SetFlag(C, temp > 255);
 	
-	// The Zero flag is set if the result is 0
 	SetFlag(Z, (temp & 0x00FF) == 0);
 	
-	// The signed Overflow flag is set based on all that up there! :D
 	SetFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
 	
-	// The negative flag is set to the most significant bit of the result
 	SetFlag(N, temp & 0x80);
 	
-	// Load the result into the accumulator (it's 8-bit dont forget!)
 	a = temp & 0x00FF;
 	
-	// This instruction has the potential to require an additional clock cycle
 	return 1;
 }
 
 uint8_t Core::SBC()
 {
 	fetch();
-	
-	// Operating in 16-bit domain to capture carry out
-	
-	// We can invert the bottom 8 bits with bitwise xor
+
 	uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
 	
-	// Notice this is exactly the same as addition from here!
 	temp = (uint16_t)a + value + (uint16_t)GetFlag(C);
 	SetFlag(C, temp & 0xFF00);
 	SetFlag(Z, ((temp & 0x00FF) == 0));
@@ -356,8 +338,7 @@ uint8_t Core::ASL()
 
 uint8_t Core::BCC()
 {
-	if (GetFlag(C) == 0)
-	{
+	if (GetFlag(C) == 0) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 		
@@ -371,8 +352,7 @@ uint8_t Core::BCC()
 
 uint8_t Core::BCS()
 {
-	if (GetFlag(C) == 1)
-	{
+	if (GetFlag(C) == 1) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -386,8 +366,7 @@ uint8_t Core::BCS()
 
 uint8_t Core::BEQ()
 {
-	if (GetFlag(Z) == 1)
-	{
+	if (GetFlag(Z) == 1) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -411,8 +390,7 @@ uint8_t Core::BIT()
 
 uint8_t Core::BMI()
 {
-	if (GetFlag(N) == 1)
-	{
+	if (GetFlag(N) == 1) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -426,8 +404,7 @@ uint8_t Core::BMI()
 
 uint8_t Core::BNE()
 {
-	if (GetFlag(Z) == 0)
-	{
+	if (GetFlag(Z) == 0) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -441,8 +418,7 @@ uint8_t Core::BNE()
 
 uint8_t Core::BPL()
 {
-	if (GetFlag(N) == 0)
-	{
+	if (GetFlag(N) == 0) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -475,8 +451,7 @@ uint8_t Core::BRK()
 
 uint8_t Core::BVC()
 {
-	if (GetFlag(V) == 0)
-	{
+	if (GetFlag(V) == 0) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -490,8 +465,7 @@ uint8_t Core::BVC()
 
 uint8_t Core::BVS()
 {
-	if (GetFlag(V) == 1)
-	{
+	if (GetFlag(V) == 1) {
 		cycles++;
 		addr_abs = pc + addr_rel;
 
@@ -887,16 +861,14 @@ std::map<uint16_t, std::string> Core::disassemble(uint16_t nStart, uint16_t nSto
 	std::map<uint16_t, std::string> mapLines;
 	uint16_t line_addr = 0;
 
-	auto hex = [](uint32_t n, uint8_t d)
-	{
+	auto hex = [](uint32_t n, uint8_t d) {
 		std::string s(d, '0');
 		for (int i = d - 1; i >= 0; i--, n >>= 4)
 			s[i] = "0123456789ABCDEF"[n & 0xF];
 		return s;
 	};
 
-	while (addr <= (uint32_t)nStop)
-	{
+	while (addr <= (uint32_t)nStop) {
 		line_addr = addr;
 
 		std::string sInst = "$" + hex(addr, 4) + ": ";
@@ -904,77 +876,52 @@ std::map<uint16_t, std::string> Core::disassemble(uint16_t nStart, uint16_t nSto
 		uint8_t opcode = bus->cpuRead(addr, true); addr++;
 		sInst += lookup[opcode].name + " ";
 
-		if (lookup[opcode].addrmode == &Core::IMP)
-		{
+		if (lookup[opcode].addrmode == &Core::IMP) {
 			sInst += " {IMP}";
-		}
-		else if (lookup[opcode].addrmode == &Core::IMM)
-		{
+		} else if (lookup[opcode].addrmode == &Core::IMM) {
 			value = bus->cpuRead(addr, true); addr++;
 			sInst += "#$" + hex(value, 2) + " {IMM}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ZP0)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ZP0) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = 0x00;												
 			sInst += "$" + hex(lo, 2) + " {ZP0}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ZPX)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ZPX) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = 0x00;														
 			sInst += "$" + hex(lo, 2) + ", X {ZPX}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ZPY)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ZPY) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = 0x00;														
 			sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
-		}
-		else if (lookup[opcode].addrmode == &Core::IZX)
-		{
+		} else if (lookup[opcode].addrmode == &Core::IZX) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = 0x00;								
 			sInst += "($" + hex(lo, 2) + ", X) {IZX}";
-		}
-		else if (lookup[opcode].addrmode == &Core::IZY)
-		{
+		} else if (lookup[opcode].addrmode == &Core::IZY) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = 0x00;								
 			sInst += "($" + hex(lo, 2) + "), Y {IZY}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ABS)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ABS) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = bus->cpuRead(addr, true); addr++;
 			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ABX)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ABX) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = bus->cpuRead(addr, true); addr++;
 			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
-		}
-		else if (lookup[opcode].addrmode == &Core::ABY)
-		{
+		} else if (lookup[opcode].addrmode == &Core::ABY) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = bus->cpuRead(addr, true); addr++;
 			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
-		}
-		else if (lookup[opcode].addrmode == &Core::IND)
-		{
+		} else if (lookup[opcode].addrmode == &Core::IND) {
 			lo = bus->cpuRead(addr, true); addr++;
 			hi = bus->cpuRead(addr, true); addr++;
 			sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
-		}
-		else if (lookup[opcode].addrmode == &Core::REL)
-		{
+		} else if (lookup[opcode].addrmode == &Core::REL) {
 			value = bus->cpuRead(addr, true); addr++;
 			sInst += "$" + hex(value, 2) + " [$" + hex(addr + (int8_t)value, 4) + "] {REL}";
 		}
-
 		mapLines[line_addr] = sInst;
 	}
-
 	return mapLines;
 }
