@@ -2,7 +2,7 @@
 
 Bus::Bus()
 {
-	cpu.ConnectBus(this);
+	cpu.connectBus(this);
 }
 
 Bus::~Bus() {}
@@ -67,7 +67,7 @@ void Bus::clock()
                 if (systemClockCounter % 2 == 0) {
                     dma_data = cpuRead(dma_page << 8 | dma_addr);
                 } else {
-                    ppu.pOAM[dma_addr] = dma_data;
+                    ppu.OAMPtr[dma_addr] = dma_data;
                     ++dma_addr;
 
                     if (dma_addr == 0x00) {

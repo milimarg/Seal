@@ -68,7 +68,7 @@ Cartridge::Cartridge(const std::string& filepath)
 
 Cartridge::~Cartridge() {}
 
-bool Cartridge::ImageValid()
+bool Cartridge::imageValid()
 {
 	return bImageValid;
 }

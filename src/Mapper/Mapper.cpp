@@ -2,17 +2,11 @@
 
 Mapper::Mapper(uint8_t prgBanks, uint8_t chrBanks)
 {
-	PRGBanks = prgBanks;
-	CHRBanks = chrBanks;
-
+	_PrgBanks = prgBanks;
+	_ChrBanks = chrBanks;
 	reset();
 }
 
-Mapper::~Mapper()
-{
-}
+Mapper::~Mapper() {}
 
-void Mapper::reset()
-{
-
-}
+void Mapper::reset() {}

@@ -147,7 +147,7 @@ public:
     void clock();
     void reset();
     bool nmi = false;
-    uint8_t *pOAM = (uint8_t *)OAM;
+    uint8_t *OAMPtr = (uint8_t *)OAM;
     uint8_t oam_addr = 0x00;
     sObjectAttributeEntry spriteScanline[8];
     uint8_t sprite_count;

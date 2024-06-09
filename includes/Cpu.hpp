@@ -6,10 +6,10 @@
 
 class Bus;
 
-class Core {
+class Cpu {
 public:
-    Core();
-    ~Core();
+    Cpu();
+    ~Cpu();
 
 public:
     uint8_t a = 0x00;		// Accumulator Register
@@ -26,7 +26,7 @@ public:
 
     bool complete();
 
-    void ConnectBus(Bus *n) { bus = n; }
+    void connectBus(Bus *n);
 
     std::map<uint16_t, std::string> disassemble(uint16_t nStart, uint16_t nStop);
 
@@ -43,8 +43,8 @@ public:
     };
 
 private:
-    uint8_t GetFlag(FLAGS6502 f);
-    void    SetFlag(FLAGS6502 f, bool v);
+    uint8_t getFlag(FLAGS6502 f);
+    void    setFlag(FLAGS6502 f, bool v);
 
     uint8_t  fetched = 0x00;
     uint16_t temp = 0x0000;
@@ -63,8 +63,8 @@ private:
     struct INSTRUCTION
     {
         std::string name;
-        uint8_t     (Core::*operate )(void) = nullptr;
-        uint8_t     (Core::*addrmode)(void) = nullptr;
+        uint8_t     (Cpu::*operate )(void) = nullptr;
+        uint8_t     (Cpu::*addrmode)(void) = nullptr;
         uint8_t     cycles = 0;
     };
 

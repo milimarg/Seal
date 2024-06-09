@@ -1,6 +1,6 @@
 SRC		=	tests/test.cpp \
 			src/Bus.cpp \
-			src/Core.cpp \
+			src/Cpu.cpp \
 			src/Ppu.cpp \
 			src/Cartridge.cpp \
 			src/Mapper/Mapper.cpp \

@@ -2,7 +2,7 @@
     #define SEAL_BUS_HPP
     #include <cstdint>
     #include <array>
-    #include "../includes/Core.hpp"
+    #include "../includes/Cpu.hpp"
     #include "../includes/Ppu.hpp"
     #include "../includes/Cartridge.hpp"
 
@@ -12,7 +12,7 @@ public:
     ~Bus();
 
 public:
-    Core cpu;
+    Cpu cpu;
     Ppu ppu;
     std::shared_ptr<Cartridge> _cartridge;
     uint8_t cpuRam[2048];

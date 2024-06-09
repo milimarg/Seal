@@ -177,7 +177,7 @@ uint8_t Ppu::cpuRead(uint16_t addr, bool rdonly)
 
 			// OAM Data
 		case 0x0004: break;
-            data = pOAM[oam_addr];
+            data = OAMPtr[oam_addr];
 			// Scroll - Not Readable
 		case 0x0005: break;
 
@@ -213,7 +213,7 @@ void Ppu::cpuWrite(uint16_t addr, uint8_t data)
         oam_addr = data;
 		break;
 	case 0x0004: // OAM Data
-        pOAM[oam_addr] = data;
+        OAMPtr[oam_addr] = data;
 		break;
 	case 0x0005: // Scroll
 		if (address_latch == 0) {
