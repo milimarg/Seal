@@ -102,7 +102,7 @@ olc::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
 				uint8_t tile_msb = ppuRead(i * 0x1000 + nOffset + row + 0x0008);
 
 				for (uint16_t col = 0; col < 8; col++) {
-					uint8_t pixel = (tile_lsb & 0x01) + (tile_msb & 0x01);
+					uint8_t pixel = ((tile_lsb & 0x01) << 1) | (tile_msb & 0x01);
 
 					tile_lsb >>= 1;
                     tile_msb >>= 1;
@@ -177,7 +177,7 @@ uint8_t Ppu::cpuRead(uint16_t addr, bool rdonly)
 
 			// OAM Data
 		case 0x0004: break;
-
+            data = pOAM[oam_addr];
 			// Scroll - Not Readable
 		case 0x0005: break;
 
@@ -210,8 +210,10 @@ void Ppu::cpuWrite(uint16_t addr, uint8_t data)
 	case 0x0002: // Status
 		break;
 	case 0x0003: // OAM Address
+        oam_addr = data;
 		break;
 	case 0x0004: // OAM Data
+        pOAM[oam_addr] = data;
 		break;
 	case 0x0005: // Scroll
 		if (address_latch == 0) {
@@ -425,20 +427,35 @@ void Ppu::clock()
 		if (mask.render_background) {
 			bg_shifter_pattern_lo <<= 1;
 			bg_shifter_pattern_hi <<= 1;
-
 			bg_shifter_attrib_lo <<= 1;
 			bg_shifter_attrib_hi <<= 1;
 		}
+        if (mask.render_sprites && cycle >= 1 && cycle <= 258) {
+            for (int i = 0; i < sprite_count; ++i) {
+                if (spriteScanline[i].x > 0) {
+                    --spriteScanline[i].x;
+                } else {
+                    sprite_shifter_pattern_lo[i] <<= 1;
+                    sprite_shifter_pattern_hi[i] <<= 1;
+                }
+            }
+        }
 	};
 
 	if (scanline >= -1 && scanline < 240)
 	{		
-		if (scanline == 0 && cycle == 0) {
-			cycle = 1;
-		}
+		//if (scanline == 0 && cycle == 0) {
+		//	cycle = 1;
+		//}
 
 		if (scanline == -1 && cycle == 1) {
 			status.vertical_blank = 0;
+            status.sprite_overflow = 0;
+            status.sprite_zero_hit = 0;
+            for (int i = 0; i < 8; ++i) {
+                sprite_shifter_pattern_lo[i] = 0;
+                sprite_shifter_pattern_hi[i] = 0;
+            }
 		}
 
 
@@ -493,6 +510,94 @@ void Ppu::clock()
 			bg_next_tile_id = ppuRead(0x2000 | (vram_addr.reg & 0x0FFF));
 		}
 
+        if (cycle == 257 && scanline >= 0) {
+            std::memset(spriteScanline, 0xFF, 8 * sizeof(sObjectAttributeEntry));
+            sprite_count = 0;
+
+            uint8_t nOAMEntry = 0;
+            spriteZeroHitPossible = false;
+            while (nOAMEntry < 64 && sprite_count < 9) {
+                int16_t diff = ((int16_t)scanline - (int16_t)OAM[nOAMEntry].y);
+                if (diff >= 0 && diff < (control.sprite_size ? 16 : 8)) {
+                    if (sprite_count < 8) {
+                        if (nOAMEntry == 0)
+                            spriteZeroHitPossible = true;
+                        memcpy(&spriteScanline[sprite_count], &OAM[nOAMEntry], sizeof(sObjectAttributeEntry));
+                        ++sprite_count;
+                    }
+                }
+                ++nOAMEntry;
+            }
+            status.sprite_overflow = (sprite_count > 8);
+        }
+
+        if (cycle == 340) {
+            for (uint8_t i = 0; i < sprite_count; ++i) {
+                uint8_t sprite_patterns_bits_lo, sprite_patterns_bits_hi;
+                uint16_t sprite_patterns_addr_lo, sprite_patterns_addr_hi;
+
+                if (!control.sprite_size) {
+                    if (!(spriteScanline[i].attribute & 0x80)) {
+                        sprite_patterns_addr_lo =
+                                (control.pattern_sprite << 12)
+                                | (spriteScanline[i].id << 4)
+                                | (scanline - spriteScanline[i].y);
+                    } else {
+                        sprite_patterns_addr_lo =
+                                (control.pattern_sprite << 12)
+                                | (spriteScanline[i].id << 4)
+                                | (7 - (scanline - spriteScanline[i].y));
+                    }
+                } else {
+                    if (!(spriteScanline[i].attribute & 0x80)) {
+                        if (scanline - spriteScanline[i].y < 8) {
+                            sprite_patterns_addr_lo =
+                                    ((spriteScanline[i].id & 0x01) << 12)
+                                    | ((spriteScanline[i].id & 0xFE) << 4)
+                                    | ((scanline - spriteScanline[i].y) & 0x07);
+                        } else {
+                            sprite_patterns_addr_lo =
+                                    ((spriteScanline[i].id & 0x01) << 12)
+                                    | (((spriteScanline[i].id & 0xFE) + 1) << 4)
+                                    | ((scanline - spriteScanline[i].y) & 0x07);
+                        }
+                    } else {
+                        if (scanline - spriteScanline[i].y < 8) {
+                            sprite_patterns_addr_lo =
+                                    ((spriteScanline[i].id & 0x01) << 12)
+                                    | (((spriteScanline[i].id & 0xFE) + 1) << 4)
+                                    | (7 - (scanline - spriteScanline[i].y) & 0x07);
+                        } else {
+                            sprite_patterns_addr_lo =
+                                    ((spriteScanline[i].id & 0x01) << 12)
+                                    | ((spriteScanline[i].id & 0xFE) << 4)
+                                    | (7 - (scanline - spriteScanline[i].y) & 0x07);
+                        }
+                    }
+                }
+
+                sprite_patterns_addr_hi = sprite_patterns_addr_lo + 8;
+                sprite_patterns_bits_lo = ppuRead(sprite_patterns_addr_lo);
+                sprite_patterns_bits_hi = ppuRead(sprite_patterns_addr_hi);
+
+                if (spriteScanline[i].attribute & 0x40) {
+                    auto flipbyte = [](uint8_t b)
+                    {
+                        b = (b & 0xF0) >> 4 | (b & 0x0F) << 4;
+                        b = (b & 0xCC) >> 2 | (b & 0xCC) << 2;
+                        b = (b & 0xAA) >> 1 | (b & 0xAA) << 1;
+                        return b;
+                    };
+
+                    sprite_patterns_bits_lo = flipbyte(sprite_patterns_bits_lo);
+                    sprite_patterns_bits_hi = flipbyte(sprite_patterns_bits_hi);
+                }
+
+                sprite_shifter_pattern_lo[i] = sprite_patterns_bits_lo;
+                sprite_shifter_pattern_hi[i] = sprite_patterns_bits_hi;
+            }
+        }
+
 		if (scanline == -1 && cycle >= 280 && cycle < 305) {
 			TransferAddressY();
 		}
@@ -526,7 +631,65 @@ void Ppu::clock()
 		bg_palette = (bg_pal1 << 1) | bg_pal0;
 	}
 
-	sprScreen->SetPixel(cycle - 1, scanline, GetColorFromPaletteRam(bg_palette, bg_pixel));
+    uint8_t fg_pixel = 0x00;
+    uint8_t fg_palette = 0x00;
+    uint8_t fg_priority = 0x00;
+
+    if (mask.render_sprites) {
+        spriteZeroBeingRendered = false;
+        for (uint8_t i = 0; i < sprite_count; ++i) {
+            if (spriteScanline[i].x == 0) {
+                uint8_t fg_pixel_lo = (sprite_shifter_pattern_lo[i] & 0x80) > 0;
+                uint8_t fg_pixel_hi = (sprite_shifter_pattern_hi[i] & 0x80) > 0;
+                fg_pixel = (fg_pixel_hi << 1) | fg_pixel_lo;
+                fg_palette = (spriteScanline[i].attribute & 0x03) + 0x04;
+                fg_priority = (spriteScanline[i].attribute & 0x20) == 0;
+
+                if (fg_pixel != 0) {
+                    if (i == 0)
+                        spriteZeroBeingRendered = true;
+                    break;
+                }
+            }
+        }
+    }
+
+    uint8_t pixel = 0x00;
+    uint8_t palette = 0x00;
+
+    if (bg_pixel == 0 && fg_pixel == 0) {
+        pixel = 0x00;
+        palette = 0x00;
+    } else if (bg_pixel == 0 && fg_pixel > 0) {
+        pixel = fg_pixel;
+        palette = fg_palette;
+    } else if (bg_pixel > 0 && fg_pixel == 0) {
+        pixel = bg_pixel;
+        palette = bg_palette;
+    } else if (bg_pixel > 0 && fg_pixel > 0) {
+        if (fg_priority) {
+            pixel = fg_pixel;
+            palette = fg_palette;
+        } else {
+            pixel = bg_pixel;
+            palette = bg_pixel;
+        }
+        if (spriteZeroHitPossible && spriteZeroBeingRendered) {
+            if (mask.render_background & mask.render_sprites) {
+                if (~(mask.render_background_left | mask.render_sprites_left)) {
+                     if (cycle >= 9 && cycle < 258) {
+                         status.sprite_zero_hit = 1;
+                     }
+                } else {
+                    if (cycle >= 1 && cycle < 258) {
+                        status.sprite_zero_hit = 1;
+                    }
+                }
+            }
+        }
+    }
+
+	sprScreen->SetPixel(cycle - 1, scanline, GetColorFromPaletteRam(palette, pixel));
 
 	cycle++;
 	if (cycle >= 341) {

@@ -134,12 +134,27 @@ public:
 
 private:
     std::shared_ptr<Cartridge> cart;
+    struct sObjectAttributeEntry
+    {
+        uint8_t y;
+        uint8_t id;
+        uint8_t attribute;
+        uint8_t x;
+    } OAM[64];
 
 public:
     void ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge);
     void clock();
     void reset();
     bool nmi = false;
+    uint8_t *pOAM = (uint8_t *)OAM;
+    uint8_t oam_addr = 0x00;
+    sObjectAttributeEntry spriteScanline[8];
+    uint8_t sprite_count;
+    uint8_t sprite_shifter_pattern_lo[8];
+    uint8_t sprite_shifter_pattern_hi[8];
+    bool spriteZeroHitPossible = false;
+    bool spriteZeroBeingRendered = false;
 };
 
 #endif //SEAL_PPU_HPP

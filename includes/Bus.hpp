@@ -25,6 +25,11 @@ public:
 private:
     uint32_t systemClockCounter = 0;
     uint8_t controller_state[2];
+    uint8_t dma_page = 0x00;
+    uint8_t dma_addr = 0x00;
+    uint8_t dma_data = 0x00;
+    bool dma_dummy = true;
+    bool dma_transfer = false;
 
 public:
     void insertCartridge(const std::shared_ptr<Cartridge>& cartridge);
