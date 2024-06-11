@@ -79,11 +79,11 @@ Ppu::Ppu()
 
 Ppu::~Ppu()
 {
-	delete sprScreen;
-	delete sprNameTable[0];
-	delete sprNameTable[1];
-	delete sprPatternTable[0];
-	delete sprPatternTable[1];
+	//delete sprScreen;
+	//delete sprNameTable[0];
+	//delete sprNameTable[1];
+	//delete sprPatternTable[0];
+	//delete sprPatternTable[1];
 }
 
 olc::Sprite& Ppu::GetScreen()
@@ -511,7 +511,7 @@ void Ppu::clock()
 		}
 
         if (cycle == 257 && scanline >= 0) {
-            std::memset(spriteScanline, 0xFF, 8 * sizeof(sObjectAttributeEntry));
+            memset(spriteScanline, 0xFF, 8 * sizeof(sObjectAttributeEntry));
             sprite_count = 0;
 
             uint8_t nOAMEntry = 0;
