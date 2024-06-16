@@ -47,7 +47,7 @@ void Cpu::reset()
 	x = 0;
 	y = 0;
 	stackPtr = 0xFD;
-	status = 0x00 | U;
+	status = 0x00 | static_cast<uint8_t>(FLAGS6502::U);
 
 	addr_rel = 0x0000;
 	addr_abs = 0x0000;
@@ -58,14 +58,14 @@ void Cpu::reset()
 
 void Cpu::irq()
 {
-	if (getFlag(I) == 0) {
+	if (getFlag(FLAGS6502::I) == 0) {
 		write(0x0100 + stackPtr, (pc >> 8) & 0x00FF);
 		--stackPtr;
 		write(0x0100 + stackPtr, pc & 0x00FF);
 		--stackPtr;
-		setFlag(B, 0);
-		setFlag(U, 1);
-		setFlag(I, 1);
+		setFlag(FLAGS6502::B, 0);
+		setFlag(FLAGS6502::U, 1);
+		setFlag(FLAGS6502::I, 1);
 		write(0x0100 + stackPtr, status);
 		--stackPtr;
 		addr_abs = 0xFFFE;
@@ -82,9 +82,9 @@ void Cpu::nmi()
 	--stackPtr;
 	write(0x0100 + stackPtr, pc & 0x00FF);
 	--stackPtr;
-	setFlag(B, 0);
-	setFlag(U, 1);
-	setFlag(I, 1);
+	setFlag(FLAGS6502::B, 0);
+	setFlag(FLAGS6502::U, 1);
+	setFlag(FLAGS6502::I, 1);
 	write(0x0100 + stackPtr, status);
 	--stackPtr;
 	addr_abs = 0xFFFA;
@@ -98,13 +98,13 @@ void Cpu::clock()
 {
 	if (cycles == 0) {
 		opcode = read(pc);
-		setFlag(U, true);
+		setFlag(FLAGS6502::U, true);
 		++pc;
 		cycles = lookup[opcode].cycles;
 		uint8_t additional_cycle1 = (this->*lookup[opcode].addrmode)();
 		uint8_t additional_cycle2 = (this->*lookup[opcode].operate)();
 		cycles += (additional_cycle1 & additional_cycle2);
-		setFlag(U, true);
+		setFlag(FLAGS6502::U, true);
 	}
 	++clockCount;
 	--cycles;
@@ -112,12 +112,12 @@ void Cpu::clock()
 
 uint8_t Cpu::getFlag(FLAGS6502 f)
 {
-	return (status & f) > 0;
+	return (status & static_cast<uint8_t>(f)) > 0;
 }
 
 void Cpu::setFlag(FLAGS6502 f, bool v)
 {
-    status = v ? status | f : status & ~f;
+    status = v ? status | static_cast<uint8_t>(f) : status & ~static_cast<uint8_t>(f);
 }
 
 uint8_t Cpu::IMP()
@@ -242,11 +242,11 @@ uint8_t Cpu::fetch()
 uint8_t Cpu::ADC()
 {
 	fetch();
-	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)getFlag(C);
-	setFlag(C, temp > 255);
-	setFlag(Z, (temp & 0x00FF) == 0);
-	setFlag(V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
-	setFlag(N, temp & 0x80);
+	temp = (uint16_t)a + (uint16_t)fetched + (uint16_t)getFlag(FLAGS6502::C);
+	setFlag(FLAGS6502::C, temp > 255);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0);
+	setFlag(FLAGS6502::V, (~((uint16_t)a ^ (uint16_t)fetched) & ((uint16_t)a ^ (uint16_t)temp)) & 0x0080);
+	setFlag(FLAGS6502::N, temp & 0x80);
 	a = temp & 0x00FF;
 	return 1;
 }
@@ -255,11 +255,11 @@ uint8_t Cpu::SBC()
 {
 	fetch();
 	uint16_t value = ((uint16_t)fetched) ^ 0x00FF;
-	temp = (uint16_t)a + value + (uint16_t)getFlag(C);
-	setFlag(C, temp & 0xFF00);
-	setFlag(Z, ((temp & 0x00FF) == 0));
-	setFlag(V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
-	setFlag(N, temp & 0x0080);
+	temp = (uint16_t)a + value + (uint16_t)getFlag(FLAGS6502::C);
+	setFlag(FLAGS6502::C, temp & 0xFF00);
+	setFlag(FLAGS6502::Z, ((temp & 0x00FF) == 0));
+	setFlag(FLAGS6502::V, (temp ^ (uint16_t)a) & (temp ^ value) & 0x0080);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	a = temp & 0x00FF;
 	return 1;
 }
@@ -268,8 +268,8 @@ uint8_t Cpu::AND()
 {
 	fetch();
 	a &= fetched;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 1;
 }
 
@@ -277,9 +277,9 @@ uint8_t Cpu::ASL()
 {
 	fetch();
 	temp = (uint16_t)fetched << 1;
-	setFlag(C, (temp & 0xFF00) > 0);
-	setFlag(Z, (temp & 0x00FF) == 0x00);
-	setFlag(N, temp & 0x80);
+	setFlag(FLAGS6502::C, (temp & 0xFF00) > 0);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x00);
+	setFlag(FLAGS6502::N, temp & 0x80);
 	if (lookup[opcode].addrmode == &Cpu::IMP)
 		a = temp & 0x00FF;
 	else
@@ -289,7 +289,7 @@ uint8_t Cpu::ASL()
 
 uint8_t Cpu::BCC()
 {
-	if (getFlag(C) != 0)
+	if (getFlag(FLAGS6502::C) != 0)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -301,7 +301,7 @@ uint8_t Cpu::BCC()
 
 uint8_t Cpu::BCS()
 {
-	if (getFlag(C) != 1)
+	if (getFlag(FLAGS6502::C) != 1)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -313,7 +313,7 @@ uint8_t Cpu::BCS()
 
 uint8_t Cpu::BEQ()
 {
-	if (getFlag(Z) != 1)
+	if (getFlag(FLAGS6502::Z) != 1)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -327,15 +327,15 @@ uint8_t Cpu::BIT()
 {
 	fetch();
 	temp = a & fetched;
-	setFlag(Z, (temp & 0x00FF) == 0x00);
-	setFlag(N, fetched & (1 << 7));
-	setFlag(V, fetched & (1 << 6));
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x00);
+	setFlag(FLAGS6502::N, fetched & (1 << 7));
+	setFlag(FLAGS6502::V, fetched & (1 << 6));
 	return 0;
 }
 
 uint8_t Cpu::BMI()
 {
-	if (getFlag(N) != 1)
+	if (getFlag(FLAGS6502::N) != 1)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -347,7 +347,7 @@ uint8_t Cpu::BMI()
 
 uint8_t Cpu::BNE()
 {
-	if (getFlag(Z) != 0)
+	if (getFlag(FLAGS6502::Z) != 0)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -359,7 +359,7 @@ uint8_t Cpu::BNE()
 
 uint8_t Cpu::BPL()
 {
-	if (getFlag(N) != 0)
+	if (getFlag(FLAGS6502::N) != 0)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -372,22 +372,22 @@ uint8_t Cpu::BPL()
 uint8_t Cpu::BRK()
 {
     ++pc;
-	setFlag(I, 1);
+	setFlag(FLAGS6502::I, 1);
 	write(0x0100 + stackPtr, (pc >> 8) & 0x00FF);
     --stackPtr;
 	write(0x0100 + stackPtr, pc & 0x00FF);
     --stackPtr;
-	setFlag(B, 1);
+	setFlag(FLAGS6502::B, 1);
 	write(0x0100 + stackPtr, status);
     --stackPtr;
-	setFlag(B, 0);
+	setFlag(FLAGS6502::B, 0);
 	pc = (uint16_t)read(0xFFFE) | ((uint16_t)read(0xFFFF) << 8);
 	return 0;
 }
 
 uint8_t Cpu::BVC()
 {
-	if (getFlag(V) != 0)
+	if (getFlag(FLAGS6502::V) != 0)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -399,7 +399,7 @@ uint8_t Cpu::BVC()
 
 uint8_t Cpu::BVS()
 {
-	if (getFlag(V) != 1)
+	if (getFlag(FLAGS6502::V) != 1)
         return 0;
     ++cycles;
     addr_abs = pc + addr_rel;
@@ -411,25 +411,25 @@ uint8_t Cpu::BVS()
 
 uint8_t Cpu::CLC()
 {
-	setFlag(C, false);
+	setFlag(FLAGS6502::C, false);
 	return 0;
 }
 
 uint8_t Cpu::CLD()
 {
-	setFlag(D, false);
+	setFlag(FLAGS6502::D, false);
 	return 0;
 }
 
 uint8_t Cpu::CLI()
 {
-	setFlag(I, false);
+	setFlag(FLAGS6502::I, false);
 	return 0;
 }
 
 uint8_t Cpu::CLV()
 {
-	setFlag(V, false);
+	setFlag(FLAGS6502::V, false);
 	return 0;
 }
 
@@ -437,9 +437,9 @@ uint8_t Cpu::CMP()
 {
 	fetch();
 	temp = (uint16_t)a - (uint16_t)fetched;
-	setFlag(C, a >= fetched);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::C, a >= fetched);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	return 1;
 }
 
@@ -447,9 +447,9 @@ uint8_t Cpu::CPX()
 {
 	fetch();
 	temp = (uint16_t)x - (uint16_t)fetched;
-	setFlag(C, x >= fetched);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::C, x >= fetched);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	return 0;
 }
 
@@ -457,9 +457,9 @@ uint8_t Cpu::CPY()
 {
 	fetch();
 	temp = (uint16_t)y - (uint16_t)fetched;
-	setFlag(C, y >= fetched);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::C, y >= fetched);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	return 0;
 }
 
@@ -468,24 +468,24 @@ uint8_t Cpu::DEC()
 	fetch();
 	temp = fetched - 1;
 	write(addr_abs, temp & 0x00FF);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	return 0;
 }
 
 uint8_t Cpu::DEX()
 {
 	--x;
-	setFlag(Z, x == 0x00);
-	setFlag(N, x & 0x80);
+	setFlag(FLAGS6502::Z, x == 0x00);
+	setFlag(FLAGS6502::N, x & 0x80);
 	return 0;
 }
 
 uint8_t Cpu::DEY()
 {
 	--y;
-	setFlag(Z, y == 0x00);
-	setFlag(N, y & 0x80);
+	setFlag(FLAGS6502::Z, y == 0x00);
+	setFlag(FLAGS6502::N, y & 0x80);
 	return 0;
 }
 
@@ -493,8 +493,8 @@ uint8_t Cpu::EOR()
 {
 	fetch();
 	a ^= fetched;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 1;
 }
 
@@ -503,24 +503,24 @@ uint8_t Cpu::INC()
 	fetch();
 	temp = fetched + 1;
 	write(addr_abs, temp & 0x00FF);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	return 0;
 }
 
 uint8_t Cpu::INX()
 {
 	++x;
-	setFlag(Z, x == 0x00);
-	setFlag(N, x & 0x80);
+	setFlag(FLAGS6502::Z, x == 0x00);
+	setFlag(FLAGS6502::N, x & 0x80);
 	return 0;
 }
 
 uint8_t Cpu::INY()
 {
 	++y;
-	setFlag(Z, y == 0x00);
-	setFlag(N, y & 0x80);
+	setFlag(FLAGS6502::Z, y == 0x00);
+	setFlag(FLAGS6502::N, y & 0x80);
 	return 0;
 }
 
@@ -545,8 +545,8 @@ uint8_t Cpu::LDA()
 {
 	fetch();
 	a = fetched;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 1;
 }
 
@@ -554,8 +554,8 @@ uint8_t Cpu::LDX()
 {
 	fetch();
 	x = fetched;
-	setFlag(Z, x == 0x00);
-	setFlag(N, x & 0x80);
+	setFlag(FLAGS6502::Z, x == 0x00);
+	setFlag(FLAGS6502::N, x & 0x80);
 	return 1;
 }
 
@@ -563,18 +563,18 @@ uint8_t Cpu::LDY()
 {
 	fetch();
 	y = fetched;
-	setFlag(Z, y == 0x00);
-	setFlag(N, y & 0x80);
+	setFlag(FLAGS6502::Z, y == 0x00);
+	setFlag(FLAGS6502::N, y & 0x80);
 	return 1;
 }
 
 uint8_t Cpu::LSR()
 {
 	fetch();
-	setFlag(C, fetched & 0x0001);
+	setFlag(FLAGS6502::C, fetched & 0x0001);
 	temp = fetched >> 1;
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	if (lookup[opcode].addrmode == &Cpu::IMP)
 		a = temp & 0x00FF;
 	else
@@ -584,24 +584,16 @@ uint8_t Cpu::LSR()
 
 uint8_t Cpu::NOP()
 {
-	switch (opcode) {
-	case 0x1C:
-	case 0x3C:
-	case 0x5C:
-	case 0x7C:
-	case 0xDC:
-	case 0xFC:
-		return 1;
-	}
-	return 0;
+    return opcode == 0x1C || opcode == 0x3C || opcode == 0x5C ||
+           opcode == 0x7C || opcode == 0xDC || opcode == 0xFC;
 }
 
 uint8_t Cpu::ORA()
 {
 	fetch();
 	a |= fetched;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 1;
 }
 
@@ -614,9 +606,11 @@ uint8_t Cpu::PHA()
 
 uint8_t Cpu::PHP()
 {
-	write(0x0100 + stackPtr, status | B | U);
-	setFlag(B, 0);
-	setFlag(U, 0);
+	write(0x0100 + stackPtr, status
+          | static_cast<uint8_t>(FLAGS6502::B)
+          | static_cast<uint8_t>(FLAGS6502::U));
+	setFlag(FLAGS6502::B, 0);
+	setFlag(FLAGS6502::U, 0);
 	--stackPtr;
 	return 0;
 }
@@ -625,8 +619,8 @@ uint8_t Cpu::PLA()
 {
 	++stackPtr;
 	a = read(0x0100 + stackPtr);
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 0;
 }
 
@@ -634,17 +628,17 @@ uint8_t Cpu::PLP()
 {
 	++stackPtr;
 	status = read(0x0100 + stackPtr);
-	setFlag(U, 1);
+	setFlag(FLAGS6502::U, 1);
 	return 0;
 }
 
 uint8_t Cpu::ROL()
 {
 	fetch();
-	temp = (uint16_t)(fetched << 1) | getFlag(C);
-	setFlag(C, temp & 0xFF00);
-	setFlag(Z, (temp & 0x00FF) == 0x0000);
-	setFlag(N, temp & 0x0080);
+	temp = (uint16_t)(fetched << 1) | getFlag(FLAGS6502::C);
+	setFlag(FLAGS6502::C, temp & 0xFF00);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x0000);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	if (lookup[opcode].addrmode == &Cpu::IMP)
 		a = temp & 0x00FF;
 	else
@@ -655,10 +649,10 @@ uint8_t Cpu::ROL()
 uint8_t Cpu::ROR()
 {
 	fetch();
-	temp = (uint16_t)(getFlag(C) << 7) | (fetched >> 1);
-	setFlag(C, fetched & 0x01);
-	setFlag(Z, (temp & 0x00FF) == 0x00);
-	setFlag(N, temp & 0x0080);
+	temp = (uint16_t)(getFlag(FLAGS6502::C) << 7) | (fetched >> 1);
+	setFlag(FLAGS6502::C, fetched & 0x01);
+	setFlag(FLAGS6502::Z, (temp & 0x00FF) == 0x00);
+	setFlag(FLAGS6502::N, temp & 0x0080);
 	if (lookup[opcode].addrmode == &Cpu::IMP)
 		a = temp & 0x00FF;
 	else
@@ -670,8 +664,8 @@ uint8_t Cpu::RTI()
 {
 	++stackPtr;
 	status = read(0x0100 + stackPtr);
-	status &= ~B;
-	status &= ~U;
+	status &= ~(static_cast<uint8_t>(FLAGS6502::B));
+	status &= ~(static_cast<uint8_t>(FLAGS6502::U));
 	++stackPtr;
 	pc = (uint16_t)read(0x0100 + stackPtr);
 	++stackPtr;
@@ -691,19 +685,19 @@ uint8_t Cpu::RTS()
 
 uint8_t Cpu::SEC()
 {
-	setFlag(C, true);
+	setFlag(FLAGS6502::C, true);
 	return 0;
 }
 
 uint8_t Cpu::SED()
 {
-	setFlag(D, true);
+	setFlag(FLAGS6502::D, true);
 	return 0;
 }
 
 uint8_t Cpu::SEI()
 {
-	setFlag(I, true);
+	setFlag(FLAGS6502::I, true);
 	return 0;
 }
 
@@ -728,32 +722,32 @@ uint8_t Cpu::STY()
 uint8_t Cpu::TAX()
 {
 	x = a;
-	setFlag(Z, x == 0x00);
-	setFlag(N, x & 0x80);
+	setFlag(FLAGS6502::Z, x == 0x00);
+	setFlag(FLAGS6502::N, x & 0x80);
 	return 0;
 }
 
 uint8_t Cpu::TAY()
 {
 	y = a;
-	setFlag(Z, y == 0x00);
-	setFlag(N, y & 0x80);
+	setFlag(FLAGS6502::Z, y == 0x00);
+	setFlag(FLAGS6502::N, y & 0x80);
 	return 0;
 }
 
 uint8_t Cpu::TSX()
 {
 	x = stackPtr;
-	setFlag(Z, x == 0x00);
-	setFlag(N, x & 0x80);
+	setFlag(FLAGS6502::Z, x == 0x00);
+	setFlag(FLAGS6502::N, x & 0x80);
 	return 0;
 }
 
 uint8_t Cpu::TXA()
 {
 	a = x;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 0;
 }
 
@@ -766,8 +760,8 @@ uint8_t Cpu::TXS()
 uint8_t Cpu::TYA()
 {
 	a = y;
-	setFlag(Z, a == 0x00);
-	setFlag(N, a & 0x80);
+	setFlag(FLAGS6502::Z, a == 0x00);
+	setFlag(FLAGS6502::N, a & 0x80);
 	return 0;
 }
 
@@ -792,12 +786,6 @@ std::map<uint16_t, std::string> Cpu::disassemble(uint16_t nStart, uint16_t nStop
 	uint8_t value = 0x00, lo = 0x00, hi = 0x00;
 	std::map<uint16_t, std::string> mapLines;
 	uint16_t line_addr = 0;
-	auto hex = [](uint32_t n, uint8_t d) {
-		std::string s(d, '0');
-		for (int i = d - 1; i >= 0; i--, n >>= 4)
-			s[i] = "0123456789ABCDEF"[n & 0xF];
-		return s;
-	};
 
 	while (address <= (uint32_t)nStop) {
 		line_addr = address;
@@ -832,19 +820,19 @@ std::map<uint16_t, std::string> Cpu::disassemble(uint16_t nStart, uint16_t nStop
 		} else if (lookup[opcode].addrmode == &Cpu::ABS) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = bus->cpuRead(address, true); address++;
-			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
+			sInst += "$" + Byte::hex((uint16_t)(hi << 8) | lo, 4) + " {ABS}";
 		} else if (lookup[opcode].addrmode == &Cpu::ABX) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = bus->cpuRead(address, true); address++;
-			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
+			sInst += "$" + Byte::hex((uint16_t)(hi << 8) | lo, 4) + ", X {ABX}";
 		} else if (lookup[opcode].addrmode == &Cpu::ABY) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = bus->cpuRead(address, true); address++;
-			sInst += "$" + hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
+			sInst += "$" + Byte::hex((uint16_t)(hi << 8) | lo, 4) + ", Y {ABY}";
 		} else if (lookup[opcode].addrmode == &Cpu::IND) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = bus->cpuRead(address, true); address++;
-			sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
+			sInst += "($" + Byte::hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
 		} else if (lookup[opcode].addrmode == &Cpu::REL) {
 			value = bus->cpuRead(address, true); address++;
 			sInst += "$" + Byte::hex(value, 2) + " [$" + Byte::hex(address + (int8_t)value, 4) + "] {REL}";

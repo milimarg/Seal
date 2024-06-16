@@ -130,7 +130,7 @@ void Emulator::updateKeys()
 
 sf::Color Emulator::getCpuFlagStatusColor(const Cpu::FLAGS6502 flag)
 {
-    return nes.cpu.status & flag ? sf::Color::Green : sf::Color::Red;
+    return nes.cpu.status & static_cast<uint8_t>(flag) ? sf::Color::Green : sf::Color::Red;
 }
 
 void Emulator::drawCpu(const sf::Vector2i &position)
