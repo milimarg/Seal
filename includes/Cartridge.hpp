@@ -9,6 +9,7 @@
 
 class Cartridge {
 public:
+    Cartridge() {}
     Cartridge(const std::string& filepath);
     ~Cartridge();
 

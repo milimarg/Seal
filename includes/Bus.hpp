@@ -2,9 +2,9 @@
     #define SEAL_BUS_HPP
     #include <cstdint>
     #include <array>
-    #include "../includes/Cpu.hpp"
-    #include "../includes/Ppu.hpp"
-    #include "../includes/Cartridge.hpp"
+    #include "Cpu.hpp"
+    #include "Ppu.hpp"
+    #include "Cartridge.hpp"
 
 class Bus {
 public:
@@ -19,7 +19,7 @@ public:
     uint8_t controller[2];
 
 public:
-    void    cpuWrite(uint16_t addr, uint8_t data);
+    void cpuWrite(uint16_t addr, uint8_t data);
     uint8_t cpuRead(uint16_t addr, bool bReadOnly = false);
 
 private:
@@ -32,7 +32,7 @@ private:
     bool dma_transfer = false;
 
 public:
-    void insertCartridge(const std::shared_ptr<Cartridge>& cartridge);
+    bool insertCartridge(const std::string &romFilepath);
     void reset();
     void clock();
 };

@@ -3,7 +3,9 @@
     #include <cstdint>
     #include <memory>
     #include <cstring>
-    #include "../tests/olcPixelGameEngine.hpp"
+    #include <iostream>
+    //#include "../tests/olcPixelGameEngine.hpp"
+    #include <SFML/Graphics.hpp>
     #include "Cartridge.hpp"
 
 class Ppu {
@@ -17,45 +19,32 @@ private:
     uint8_t		tblPalette[32];
 
 private:
-    olc::Pixel  palScreen[0x40];
-    // In Video
-    // olc::Sprite sprScreen = olc::Sprite(256, 240);
-    // olc::Sprite sprNameTable[2] = { olc::Sprite(256, 240), olc::Sprite(256, 240) };
-    //olc::Sprite sprPatternTable[2] = { olc::Sprite(128, 128), olc::Sprite(128, 128) };
-
-    // Changed To for API breaking subsequent PGE Update
-    olc::Sprite* sprScreen;
-    olc::Sprite* sprNameTable[2];
-    olc::Sprite* sprPatternTable[2];
-
+    sf::Color palScreen[0x40];
+    sf::Image sprScreen;
+    sf::Image sprPatternTable[2];
 
 public:
-    olc::Sprite& GetScreen();
-    olc::Sprite& GetNameTable(uint8_t i);
-    olc::Sprite& GetPatternTable(uint8_t i, uint8_t palette);
-    olc::Pixel& GetColorFromPaletteRam(uint8_t palette, uint8_t pixel);
+    sf::Image& GetScreen();
+    //olc::Sprite& GetNameTable(uint8_t i);
+    sf::Image& GetPatternTable(uint8_t i, uint8_t palette);
+    sf::Color GetColorFromPaletteRam(uint8_t palette, uint8_t pixel);
     bool frame_complete = false;
 
 private:
 
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             uint8_t unused : 5;
             uint8_t sprite_overflow : 1;
             uint8_t sprite_zero_hit : 1;
             uint8_t vertical_blank : 1;
         };
-
         uint8_t reg;
     } status;
 
 
-    union
-    {
-        struct
-        {
+    union {
+        struct {
             uint8_t grayscale : 1;
             uint8_t render_background_left : 1;
             uint8_t render_sprites_left : 1;
@@ -65,14 +54,11 @@ private:
             uint8_t enhance_green : 1;
             uint8_t enhance_blue : 1;
         };
-
         uint8_t reg;
     } mask;
 
-    union PPUCTRL
-    {
-        struct
-        {
+    union PPUCTRL {
+        struct {
             uint8_t nametable_x : 1;
             uint8_t nametable_y : 1;
             uint8_t increment_mode : 1;
@@ -82,15 +68,11 @@ private:
             uint8_t slave_mode : 1; // unused
             uint8_t enable_nmi : 1;
         };
-
         uint8_t reg;
     } control;
 
-    union loopy_register
-    {
-        struct
-        {
-
+    union loopy_register {
+        struct {
             uint16_t coarse_x : 5;
             uint16_t coarse_y : 5;
             uint16_t nametable_x : 1;
@@ -98,10 +80,8 @@ private:
             uint16_t fine_y : 3;
             uint16_t unused : 1;
         };
-
         uint16_t reg = 0x0000;
     };
-
 
     loopy_register vram_addr;
     loopy_register tram_addr;
@@ -141,11 +121,11 @@ private:
     } OAM[64];
 
 public:
-    void ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge);
+    void connectCartridge(const std::shared_ptr<Cartridge> &cartridge);
     void clock();
     void reset();
     bool nmi = false;
-    uint8_t *OAMPtr = (uint8_t *)OAM;
+    uint8_t *OAMPtr = (uint8_t *)&OAM[0];
     uint8_t oam_addr = 0x00;
     sObjectAttributeEntry spriteScanline[8];
     uint8_t sprite_count;

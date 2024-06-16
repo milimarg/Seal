@@ -39,10 +39,16 @@ uint8_t Bus::cpuRead(uint16_t addr, bool bReadOnly)
 	return data;
 }
 
-void Bus::insertCartridge(const std::shared_ptr<Cartridge>& cartridge)
+bool Bus::insertCartridge(const std::string &romFilepath)
 {
-	_cartridge = cartridge;
-	ppu.ConnectCartridge(cartridge);
+	_cartridge = std::make_shared<Cartridge>(romFilepath);
+    if (!_cartridge->imageValid()) {
+        // TODO: destroy cartridge
+        _cartridge = nullptr;
+        return false;
+    }
+	ppu.connectCartridge(_cartridge);
+    return true;
 }
 
 void Bus::reset()

@@ -2,112 +2,107 @@
 
 Ppu::Ppu()
 {
-	palScreen[0x00] = olc::Pixel(84, 84, 84);
-	palScreen[0x01] = olc::Pixel(0, 30, 116);
-	palScreen[0x02] = olc::Pixel(8, 16, 144);
-	palScreen[0x03] = olc::Pixel(48, 0, 136);
-	palScreen[0x04] = olc::Pixel(68, 0, 100);
-	palScreen[0x05] = olc::Pixel(92, 0, 48);
-	palScreen[0x06] = olc::Pixel(84, 4, 0);
-	palScreen[0x07] = olc::Pixel(60, 24, 0);
-	palScreen[0x08] = olc::Pixel(32, 42, 0);
-	palScreen[0x09] = olc::Pixel(8, 58, 0);
-	palScreen[0x0A] = olc::Pixel(0, 64, 0);
-	palScreen[0x0B] = olc::Pixel(0, 60, 0);
-	palScreen[0x0C] = olc::Pixel(0, 50, 60);
-	palScreen[0x0D] = olc::Pixel(0, 0, 0);
-	palScreen[0x0E] = olc::Pixel(0, 0, 0);
-	palScreen[0x0F] = olc::Pixel(0, 0, 0);
+	palScreen[0x00] = sf::Color(84, 84, 84);
+	palScreen[0x01] = sf::Color(0, 30, 116);
+	palScreen[0x02] = sf::Color(8, 16, 144);
+	palScreen[0x03] = sf::Color(48, 0, 136);
+	palScreen[0x04] = sf::Color(68, 0, 100);
+	palScreen[0x05] = sf::Color(92, 0, 48);
+	palScreen[0x06] = sf::Color(84, 4, 0);
+	palScreen[0x07] = sf::Color(60, 24, 0);
+	palScreen[0x08] = sf::Color(32, 42, 0);
+	palScreen[0x09] = sf::Color(8, 58, 0);
+	palScreen[0x0A] = sf::Color(0, 64, 0);
+	palScreen[0x0B] = sf::Color(0, 60, 0);
+	palScreen[0x0C] = sf::Color(0, 50, 60);
+	palScreen[0x0D] = sf::Color(0, 0, 0);
+	palScreen[0x0E] = sf::Color(0, 0, 0);
+	palScreen[0x0F] = sf::Color(0, 0, 0);
 
-	palScreen[0x10] = olc::Pixel(152, 150, 152);
-	palScreen[0x11] = olc::Pixel(8, 76, 196);
-	palScreen[0x12] = olc::Pixel(48, 50, 236);
-	palScreen[0x13] = olc::Pixel(92, 30, 228);
-	palScreen[0x14] = olc::Pixel(136, 20, 176);
-	palScreen[0x15] = olc::Pixel(160, 20, 100);
-	palScreen[0x16] = olc::Pixel(152, 34, 32);
-	palScreen[0x17] = olc::Pixel(120, 60, 0);
-	palScreen[0x18] = olc::Pixel(84, 90, 0);
-	palScreen[0x19] = olc::Pixel(40, 114, 0);
-	palScreen[0x1A] = olc::Pixel(8, 124, 0);
-	palScreen[0x1B] = olc::Pixel(0, 118, 40);
-	palScreen[0x1C] = olc::Pixel(0, 102, 120);
-	palScreen[0x1D] = olc::Pixel(0, 0, 0);
-	palScreen[0x1E] = olc::Pixel(0, 0, 0);
-	palScreen[0x1F] = olc::Pixel(0, 0, 0);
+	palScreen[0x10] = sf::Color(152, 150, 152);
+	palScreen[0x11] = sf::Color(8, 76, 196);
+	palScreen[0x12] = sf::Color(48, 50, 236);
+	palScreen[0x13] = sf::Color(92, 30, 228);
+	palScreen[0x14] = sf::Color(136, 20, 176);
+	palScreen[0x15] = sf::Color(160, 20, 100);
+	palScreen[0x16] = sf::Color(152, 34, 32);
+	palScreen[0x17] = sf::Color(120, 60, 0);
+	palScreen[0x18] = sf::Color(84, 90, 0);
+	palScreen[0x19] = sf::Color(40, 114, 0);
+	palScreen[0x1A] = sf::Color(8, 124, 0);
+	palScreen[0x1B] = sf::Color(0, 118, 40);
+	palScreen[0x1C] = sf::Color(0, 102, 120);
+	palScreen[0x1D] = sf::Color(0, 0, 0);
+	palScreen[0x1E] = sf::Color(0, 0, 0);
+	palScreen[0x1F] = sf::Color(0, 0, 0);
 
-	palScreen[0x20] = olc::Pixel(236, 238, 236);
-	palScreen[0x21] = olc::Pixel(76, 154, 236);
-	palScreen[0x22] = olc::Pixel(120, 124, 236);
-	palScreen[0x23] = olc::Pixel(176, 98, 236);
-	palScreen[0x24] = olc::Pixel(228, 84, 236);
-	palScreen[0x25] = olc::Pixel(236, 88, 180);
-	palScreen[0x26] = olc::Pixel(236, 106, 100);
-	palScreen[0x27] = olc::Pixel(212, 136, 32);
-	palScreen[0x28] = olc::Pixel(160, 170, 0);
-	palScreen[0x29] = olc::Pixel(116, 196, 0);
-	palScreen[0x2A] = olc::Pixel(76, 208, 32);
-	palScreen[0x2B] = olc::Pixel(56, 204, 108);
-	palScreen[0x2C] = olc::Pixel(56, 180, 204);
-	palScreen[0x2D] = olc::Pixel(60, 60, 60);
-	palScreen[0x2E] = olc::Pixel(0, 0, 0);
-	palScreen[0x2F] = olc::Pixel(0, 0, 0);
+	palScreen[0x20] = sf::Color(236, 238, 236);
+	palScreen[0x21] = sf::Color(76, 154, 236);
+	palScreen[0x22] = sf::Color(120, 124, 236);
+	palScreen[0x23] = sf::Color(176, 98, 236);
+	palScreen[0x24] = sf::Color(228, 84, 236);
+	palScreen[0x25] = sf::Color(236, 88, 180);
+	palScreen[0x26] = sf::Color(236, 106, 100);
+	palScreen[0x27] = sf::Color(212, 136, 32);
+	palScreen[0x28] = sf::Color(160, 170, 0);
+	palScreen[0x29] = sf::Color(116, 196, 0);
+	palScreen[0x2A] = sf::Color(76, 208, 32);
+	palScreen[0x2B] = sf::Color(56, 204, 108);
+	palScreen[0x2C] = sf::Color(56, 180, 204);
+	palScreen[0x2D] = sf::Color(60, 60, 60);
+	palScreen[0x2E] = sf::Color(0, 0, 0);
+	palScreen[0x2F] = sf::Color(0, 0, 0);
 
-	palScreen[0x30] = olc::Pixel(236, 238, 236);
-	palScreen[0x31] = olc::Pixel(168, 204, 236);
-	palScreen[0x32] = olc::Pixel(188, 188, 236);
-	palScreen[0x33] = olc::Pixel(212, 178, 236);
-	palScreen[0x34] = olc::Pixel(236, 174, 236);
-	palScreen[0x35] = olc::Pixel(236, 174, 212);
-	palScreen[0x36] = olc::Pixel(236, 180, 176);
-	palScreen[0x37] = olc::Pixel(228, 196, 144);
-	palScreen[0x38] = olc::Pixel(204, 210, 120);
-	palScreen[0x39] = olc::Pixel(180, 222, 120);
-	palScreen[0x3A] = olc::Pixel(168, 226, 144);
-	palScreen[0x3B] = olc::Pixel(152, 226, 180);
-	palScreen[0x3C] = olc::Pixel(160, 214, 228);
-	palScreen[0x3D] = olc::Pixel(160, 162, 160);
-	palScreen[0x3E] = olc::Pixel(0, 0, 0);
-	palScreen[0x3F] = olc::Pixel(0, 0, 0);
+	palScreen[0x30] = sf::Color(236, 238, 236);
+	palScreen[0x31] = sf::Color(168, 204, 236);
+	palScreen[0x32] = sf::Color(188, 188, 236);
+	palScreen[0x33] = sf::Color(212, 178, 236);
+	palScreen[0x34] = sf::Color(236, 174, 236);
+	palScreen[0x35] = sf::Color(236, 174, 212);
+	palScreen[0x36] = sf::Color(236, 180, 176);
+	palScreen[0x37] = sf::Color(228, 196, 144);
+	palScreen[0x38] = sf::Color(204, 210, 120);
+	palScreen[0x39] = sf::Color(180, 222, 120);
+	palScreen[0x3A] = sf::Color(168, 226, 144);
+	palScreen[0x3B] = sf::Color(152, 226, 180);
+	palScreen[0x3C] = sf::Color(160, 214, 228);
+	palScreen[0x3D] = sf::Color(160, 162, 160);
+	palScreen[0x3E] = sf::Color(0, 0, 0);
+	palScreen[0x3F] = sf::Color(0, 0, 0);
 
-	sprScreen = new olc::Sprite(256, 240);
-	sprNameTable[0] = new olc::Sprite(256, 240);
-	sprNameTable[1] = new olc::Sprite(256, 240);
-	sprPatternTable[0] = new olc::Sprite(128, 128);
-	sprPatternTable[1] = new olc::Sprite(128, 128);
+    sprScreen.create(256, 240);
+	//sprNameTable[0] = new olc::Sprite(256, 240);
+	//sprNameTable[1] = new olc::Sprite(256, 240);
+	sprPatternTable[0].create(128, 128);
+	sprPatternTable[1].create(128, 128);
 }
 
 Ppu::~Ppu()
 {
-	//delete sprScreen;
 	//delete sprNameTable[0];
 	//delete sprNameTable[1];
 	//delete sprPatternTable[0];
 	//delete sprPatternTable[1];
 }
 
-olc::Sprite& Ppu::GetScreen()
+sf::Image& Ppu::GetScreen()
 {
-	return *sprScreen;
+	return sprScreen;
 }
 
-olc::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
+sf::Image &Ppu::GetPatternTable(uint8_t i, uint8_t palette)
 {
 	for (uint16_t nTileY = 0; nTileY < 16; nTileY++) {
 		for (uint16_t nTileX = 0; nTileX < 16; nTileX++) {
 			uint16_t nOffset = nTileY * 256 + nTileX * 16;
-
 			for (uint16_t row = 0; row < 8; row++) {
-				uint8_t tile_lsb = ppuRead(i * 0x1000 + nOffset + row + 0x0000);
+				uint8_t tile_lsb = ppuRead(i * 0x1000 + nOffset + row);
 				uint8_t tile_msb = ppuRead(i * 0x1000 + nOffset + row + 0x0008);
-
 				for (uint16_t col = 0; col < 8; col++) {
 					uint8_t pixel = ((tile_lsb & 0x01) << 1) | (tile_msb & 0x01);
-
 					tile_lsb >>= 1;
                     tile_msb >>= 1;
-
-					sprPatternTable[i]->SetPixel(
+					sprPatternTable[i].setPixel(
 						nTileX * 8 + (7 - col),
 						nTileY * 8 + row,
 						GetColorFromPaletteRam(palette, pixel)
@@ -116,18 +111,18 @@ olc::Sprite& Ppu::GetPatternTable(uint8_t i, uint8_t palette)
 			}
 		}
 	}
-    return *sprPatternTable[i];
+    return sprPatternTable[i];
 }
 
-olc::Pixel& Ppu::GetColorFromPaletteRam(uint8_t palette, uint8_t pixel)
+sf::Color Ppu::GetColorFromPaletteRam(uint8_t palette, uint8_t pixel)
 {
 	return palScreen[ppuRead(0x3F00 + (palette << 2) + pixel) & 0x3F];
 }
 
-olc::Sprite& Ppu::GetNameTable(uint8_t i)
-{
-	return *sprNameTable[i];
-}
+//olc::Sprite& Ppu::GetNameTable(uint8_t i)
+//{
+//	return *sprNameTable[i];
+//}
 
 uint8_t Ppu::cpuRead(uint16_t addr, bool rdonly)
 {
@@ -340,9 +335,9 @@ void Ppu::ppuWrite(uint16_t addr, uint8_t data)
 	}
 }
 
-void Ppu::ConnectCartridge(const std::shared_ptr<Cartridge>& cartridge)
+void Ppu::connectCartridge(const std::shared_ptr<Cartridge>& cartridge)
 {
-	this->cart = cartridge;
+	cart = cartridge;
 }
 
 void Ppu::reset()
@@ -688,8 +683,12 @@ void Ppu::clock()
             }
         }
     }
-
-	sprScreen->SetPixel(cycle - 1, scanline, GetColorFromPaletteRam(palette, pixel));
+    int x = cycle - 1;
+    int y = scanline;
+    int width = sprScreen.getSize().x;
+    int height = sprScreen.getSize().y;
+    if (x >= 0 && x < width && y >= 0 && y < height)
+        sprScreen.setPixel(x, y, GetColorFromPaletteRam(palette, pixel));
 
 	cycle++;
 	if (cycle >= 341) {
