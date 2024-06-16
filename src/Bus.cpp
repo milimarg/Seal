@@ -43,7 +43,6 @@ bool Bus::insertCartridge(const std::string &romFilepath)
 {
 	_cartridge = std::make_shared<Cartridge>(romFilepath);
     if (!_cartridge->imageValid()) {
-        // TODO: destroy cartridge
         _cartridge = nullptr;
         return false;
     }

@@ -79,7 +79,7 @@ sf::Image& Ppu::GetScreen()
 	return sprScreen;
 }
 
-sf::Image &Ppu::GetPatternTable(uint8_t i, uint8_t palette)
+sf::Image &Ppu::getPatternTable(uint8_t i, uint8_t palette)
 {
 	for (uint16_t _tileY = 0; _tileY < 16; ++_tileY) {
 		for (uint16_t _tileX = 0; _tileX < 16; ++_tileX) {
@@ -223,7 +223,6 @@ uint8_t Ppu::ppuRead(uint16_t addr, bool rdonly)
 		data = tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF];
 	else if (addr >= 0x2000 && addr <= 0x3EFF) {
 		addr &= 0x0FFF;
-        // TODO: try to fix sprite graphic glitch
 		if (cart->mirror == Cartridge::MIRROR::VERTICAL) {
 			if (addr >= 0x0000 && addr <= 0x03FF)
 				data = tblName[0][addr & 0x03FF];
@@ -260,7 +259,6 @@ void Ppu::ppuWrite(uint16_t addr, uint8_t data)
 		tblPattern[(addr & 0x1000) >> 12][addr & 0x0FFF] = data;
 	else if (addr >= 0x2000 && addr <= 0x3EFF) {
 		addr &= 0x0FFF;
-        // TODO: try to fix sprite graphic glitch
         if (cart->mirror == Cartridge::MIRROR::VERTICAL){
 			if (addr >= 0x0000 && addr <= 0x03FF)
 				tblName[0][addr & 0x03FF] = data;

@@ -30,24 +30,36 @@ Emulator::Emulator(sf::RenderWindow &window, const std::string &romFilepath)
     _font.loadFromFile("./Roboto-Regular.ttf");
     _text.setCharacterSize(20);
     _text.setFont(_font);
+    _vertexArray.setPrimitiveType(sf::Quads);
     nes.reset();
 }
 
-bool Emulator::drawImage(const sf::Image &image,
+void Emulator::drawImage(const sf::Image &image,
                          const sf::Vector2f &position,
                          const sf::Vector2f &scale)
 {
-    // TODO: use vertex to draw image pixels
-    sf::Sprite sprite;
-    sf::Texture texture;
-
-    if (image.getSize().x == 0 || image.getSize().y == 0)
-        return false;
-    texture.loadFromImage(image);
-    sprite.setTexture(texture);
-    sprite.setScale(scale);
-    _window.draw(sprite);
-    return true;
+    for (unsigned int y = 0; y < image.getSize().y; ++y) {
+        for (unsigned int x = 0; x < image.getSize().x; ++x) {
+            _vertexArray.append(sf::Vertex(
+                    {static_cast<float>(x) * scale.x, static_cast<float>(y) * scale.y},
+                    image.getPixel(x, y)
+            ));
+            if (scale.x == 1.0f && scale.y == 1.0f)
+                continue;
+            _vertexArray.append(sf::Vertex(
+                    {static_cast<float>(x + 1) * scale.x, static_cast<float>(y) * scale.y},
+                    image.getPixel(x, y)
+            ));
+            _vertexArray.append(sf::Vertex(
+                    {static_cast<float>(x + 1) * scale.x, static_cast<float>(y + 1) * scale.y},
+                    image.getPixel(x, y)
+            ));
+            _vertexArray.append(sf::Vertex(
+                    {static_cast<float>(x) * scale.x, static_cast<float>(y + 1) * scale.y},
+                    image.getPixel(x, y)
+            ));
+        }
+    }
 }
 
 void Emulator::update()
@@ -78,40 +90,24 @@ void Emulator::update()
 
 void Emulator::render()
 {
+    _vertexArray.clear();
     drawCpu({1300, 10});
     drawInstructions({1600, 40}, 22);
-    drawImage(nes.ppu.GetPatternTable(0, _selectedPalette), {516, 348});
-    drawImage(nes.ppu.GetPatternTable(1, _selectedPalette), {648, 348});
     drawImage(nes.ppu.GetScreen(), {0, 0}, {4, 4});
+    _window.draw(_vertexArray);
 }
 
 void Emulator::updateControllers()
 {
     nes.controller[0] = 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::X)
-            ? 0x80 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Z)
-            ? 0x40 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::A)
-            ? 0x20 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::S)
-            ? 0x10 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Up)
-            ? 0x08 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Down)
-            ? 0x04 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Left)
-            ? 0x02 : 0x00;
-    nes.controller[0] |=
-            sf::Keyboard::isKeyPressed(sf::Keyboard::Right)
-            ? 0x01 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::X) ? 0x80 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::Z) ? 0x40 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::A) ? 0x20 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::S) ? 0x10 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::Up) ? 0x08 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::Down) ? 0x04 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::Left) ? 0x02 : 0x00;
+    nes.controller[0] |= sf::Keyboard::isKeyPressed(sf::Keyboard::Right) ? 0x01 : 0x00;
 }
 
 void Emulator::updateKeys()

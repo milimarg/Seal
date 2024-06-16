@@ -19,7 +19,7 @@ public:
     Emulator(sf::RenderWindow &window, const std::string &romFilepath);
 
     // TODO: use the same object to draw multiple ones
-    bool drawImage(const sf::Image &image,
+    void drawImage(const sf::Image &image,
                    const sf::Vector2f &position = sf::Vector2f(0, 0),
                    const sf::Vector2f &scale = sf::Vector2f(1, 1));
     void drawRectangle(const sf::IntRect &rect,
@@ -50,6 +50,7 @@ private:
     std::unordered_map<std::string, bool> _antiSpams;
     std::array<std::pair<std::string, Cpu::FLAGS6502>, 7> _cpuFlags;
     double _timeLoop;
+    sf::VertexArray _vertexArray;
 };
 
 #endif //SEAL_EMULATOR_HPP
