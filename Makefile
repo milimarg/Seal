@@ -1,4 +1,4 @@
-SRC		=	tests/test.cpp \
+SRC		=	src/main.cpp \
 			src/Bus.cpp \
 			src/Cpu.cpp \
 			src/Ppu.cpp \

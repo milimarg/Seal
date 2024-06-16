@@ -18,7 +18,6 @@ Ppu::Ppu()
 	palScreen[0x0D] = sf::Color(0, 0, 0);
 	palScreen[0x0E] = sf::Color(0, 0, 0);
 	palScreen[0x0F] = sf::Color(0, 0, 0);
-
 	palScreen[0x10] = sf::Color(152, 150, 152);
 	palScreen[0x11] = sf::Color(8, 76, 196);
 	palScreen[0x12] = sf::Color(48, 50, 236);
@@ -35,7 +34,6 @@ Ppu::Ppu()
 	palScreen[0x1D] = sf::Color(0, 0, 0);
 	palScreen[0x1E] = sf::Color(0, 0, 0);
 	palScreen[0x1F] = sf::Color(0, 0, 0);
-
 	palScreen[0x20] = sf::Color(236, 238, 236);
 	palScreen[0x21] = sf::Color(76, 154, 236);
 	palScreen[0x22] = sf::Color(120, 124, 236);
@@ -52,7 +50,6 @@ Ppu::Ppu()
 	palScreen[0x2D] = sf::Color(60, 60, 60);
 	palScreen[0x2E] = sf::Color(0, 0, 0);
 	palScreen[0x2F] = sf::Color(0, 0, 0);
-
 	palScreen[0x30] = sf::Color(236, 238, 236);
 	palScreen[0x31] = sf::Color(168, 204, 236);
 	palScreen[0x32] = sf::Color(188, 188, 236);
@@ -69,21 +66,12 @@ Ppu::Ppu()
 	palScreen[0x3D] = sf::Color(160, 162, 160);
 	palScreen[0x3E] = sf::Color(0, 0, 0);
 	palScreen[0x3F] = sf::Color(0, 0, 0);
-
     sprScreen.create(256, 240);
-	//sprNameTable[0] = new olc::Sprite(256, 240);
-	//sprNameTable[1] = new olc::Sprite(256, 240);
 	sprPatternTable[0].create(128, 128);
 	sprPatternTable[1].create(128, 128);
 }
 
-Ppu::~Ppu()
-{
-	//delete sprNameTable[0];
-	//delete sprNameTable[1];
-	//delete sprPatternTable[0];
-	//delete sprPatternTable[1];
-}
+Ppu::~Ppu() {}
 
 sf::Image& Ppu::GetScreen()
 {
@@ -92,13 +80,13 @@ sf::Image& Ppu::GetScreen()
 
 sf::Image &Ppu::GetPatternTable(uint8_t i, uint8_t palette)
 {
-	for (uint16_t nTileY = 0; nTileY < 16; nTileY++) {
-		for (uint16_t nTileX = 0; nTileX < 16; nTileX++) {
+	for (uint16_t nTileY = 0; nTileY < 16; ++nTileY) {
+		for (uint16_t nTileX = 0; nTileX < 16; ++nTileX) {
 			uint16_t nOffset = nTileY * 256 + nTileX * 16;
-			for (uint16_t row = 0; row < 8; row++) {
+			for (uint16_t row = 0; row < 8; ++row) {
 				uint8_t tile_lsb = ppuRead(i * 0x1000 + nOffset + row);
 				uint8_t tile_msb = ppuRead(i * 0x1000 + nOffset + row + 0x0008);
-				for (uint16_t col = 0; col < 8; col++) {
+				for (uint16_t col = 0; col < 8; ++col) {
 					uint8_t pixel = ((tile_lsb & 0x01) << 1) | (tile_msb & 0x01);
 					tile_lsb >>= 1;
                     tile_msb >>= 1;
@@ -119,18 +107,12 @@ sf::Color Ppu::GetColorFromPaletteRam(uint8_t palette, uint8_t pixel)
 	return palScreen[ppuRead(0x3F00 + (palette << 2) + pixel) & 0x3F];
 }
 
-//olc::Sprite& Ppu::GetNameTable(uint8_t i)
-//{
-//	return *sprNameTable[i];
-//}
-
 uint8_t Ppu::cpuRead(uint16_t addr, bool rdonly)
 {
 	uint8_t data = 0x00;
 
 	if (rdonly) {
-		switch (addr)
-		{
+		switch (addr) {
 		case 0x0000: // Control
 			data = control.reg;
 			break;
@@ -152,38 +134,30 @@ uint8_t Ppu::cpuRead(uint16_t addr, bool rdonly)
 			break;
 		}
 	} else {
-		switch (addr)
-		{
-			// Control - Not readable
-		case 0x0000: break;
-		
-			// Mask - Not Readable
-		case 0x0001: break;
-		
-			// Status
-		case 0x0002:
+		switch (addr) {
+        case 0x0000: // Control - Not readable
+            break;
+		case 0x0001: // Mask - Not Readable
+            break;
+		case 0x0002: // Status
 			data = (status.reg & 0xE0) | (ppu_data_buffer & 0x1F);
 			status.vertical_blank = 0;
 			address_latch = 0;
 			break;
-
-			// OAM Address
-		case 0x0003: break;
-
-			// OAM Data
-		case 0x0004: break;
+		case 0x0003: // OAM Address
+            break;
+		case 0x0004: // OAM Data
             data = OAMPtr[oam_addr];
-			// Scroll - Not Readable
-		case 0x0005: break;
-
-			// PPU Address - Not Readable
-		case 0x0006: break;
-
-			// PPU Data
-		case 0x0007:
+                break;
+		case 0x0005: // Scroll - Not Readable
+            break;
+		case 0x0006: // PPU Address - Not Readable
+            break;
+		case 0x0007: // PPU Data
 			data = ppu_data_buffer;
 			ppu_data_buffer = ppuRead(vram_addr.reg);
-			if (vram_addr.reg >= 0x3F00) data = ppu_data_buffer;
+			if (vram_addr.reg >= 0x3F00)
+                data = ppu_data_buffer;
 			vram_addr.reg += (control.increment_mode ? 32 : 1);
 			break;
 		}
@@ -222,8 +196,7 @@ void Ppu::cpuWrite(uint16_t addr, uint8_t data)
 		}
 		break;
 	case 0x0006: // PPU Address
-		if (address_latch == 0)
-		{
+		if (address_latch == 0) {
 			tram_addr.reg = (uint16_t)((data & 0x3F) << 8) | (tram_addr.reg & 0x00FF);
 			address_latch = 1;
 		} else {

@@ -13,6 +13,15 @@ Emulator::Emulator(sf::RenderWindow &window, const std::string &romFilepath)
     _antiSpams({
         {"SPACE", false},
         {"F", false}
+    }),
+    _cpuFlags({
+        {"N", Cpu::FLAGS6502::N}, // is negative?
+        {"V", Cpu::FLAGS6502::V}, // has overflowed?
+        {"B", Cpu::FLAGS6502::B}, // has broken?
+        {"D", Cpu::FLAGS6502::D}, // is decimal?
+        {"I", Cpu::FLAGS6502::I}, // has interrupted?
+        {"Z", Cpu::FLAGS6502::Z}, // is zero?
+        {"C", Cpu::FLAGS6502::C}  // has carry?
     })
 {
     if (!nes.insertCartridge(_romFilepath))
@@ -28,6 +37,7 @@ bool Emulator::drawImage(const sf::Image &image,
                          const sf::Vector2f &position,
                          const sf::Vector2f &scale)
 {
+    // TODO: use vertex to draw image pixels
     sf::Sprite sprite;
     sf::Texture texture;
 
@@ -40,7 +50,7 @@ bool Emulator::drawImage(const sf::Image &image,
     return true;
 }
 
-void Emulator::update(double fElapsedTime)
+void Emulator::update()
 {
     updateControllers();
     updateKeys();
@@ -68,14 +78,12 @@ void Emulator::update(double fElapsedTime)
 
 void Emulator::render()
 {
-    DrawCpu(516, 2);
+    drawCpu({1300, 10});
     drawInstructions({1600, 40}, 22);
     drawImage(nes.ppu.GetPatternTable(0, _selectedPalette), {516, 348});
     drawImage(nes.ppu.GetPatternTable(1, _selectedPalette), {648, 348});
     drawImage(nes.ppu.GetScreen(), {0, 0}, {4, 4});
 }
-
-/* ---------- PRIVATE ---------- */
 
 void Emulator::updateControllers()
 {
@@ -124,42 +132,43 @@ std::string Emulator::hex(uint32_t n, uint8_t d)
 {
     std::string s(d, '0');
 
-    for (int i = d - 1; i >= 0; i--, n >>= 4)
-        s[i] = "0123456789ABCDEF"[n & 0xF];
+    for (int i = d - 1; i >= 0; --i) {
+        s[i] = hexValues[n & 0xF];
+        n >>= 4;
+    }
     return s;
 }
 
-void Emulator::DrawRam(int x, int y, uint16_t nAddr, int nRows, int nColumns)
+sf::Color Emulator::getCpuFlagStatusColor(const Cpu::FLAGS6502 flag)
 {
-    int nRamX = x, nRamY = y;
-
-    for (int row = 0; row < nRows; row++) {
-        std::string sOffset = "$" + hex(nAddr, 4) + ":";
-        for (int col = 0; col < nColumns; col++) {
-            sOffset += " " + hex(nes.cpuRead(nAddr, true), 2);
-            nAddr += 1;
-        }
-        //DrawString(nRamX, nRamY, sOffset);
-        nRamY += 10;
-    }
+    return nes.cpu.status & flag ? sf::Color::Green : sf::Color::Red;
 }
 
-void Emulator::DrawCpu(int x, int y)
+void Emulator::drawCpu(const sf::Vector2i &position)
 {
-    //DrawString(x , y , "STATUS:", olc::WHITE);
-    //DrawString(x  + 64, y, "N", nes.cpu.status & Cpu::N ? olc::GREEN : olc::RED);
-    //DrawString(x  + 80, y , "V", nes.cpu.status & Cpu::V ? olc::GREEN : olc::RED);
-    //DrawString(x  + 96, y , "-", nes.cpu.status & Cpu::U ? olc::GREEN : olc::RED);
-    //DrawString(x  + 112, y , "B", nes.cpu.status & Cpu::B ? olc::GREEN : olc::RED);
-    //DrawString(x  + 128, y , "D", nes.cpu.status & Cpu::D ? olc::GREEN : olc::RED);
-    //DrawString(x  + 144, y , "I", nes.cpu.status & Cpu::I ? olc::GREEN : olc::RED);
-    //DrawString(x  + 160, y , "Z", nes.cpu.status & Cpu::Z ? olc::GREEN : olc::RED);
-    //DrawString(x  + 178, y , "C", nes.cpu.status & Cpu::C ? olc::GREEN : olc::RED);
-    //DrawString(x , y + 10, "PC: $" + hex(nes.cpu.pc, 4));
-    //DrawString(x , y + 20, "A: $" +  hex(nes.cpu.a, 2) + "  [" + std::to_string(nes.cpu.a) + "]");
-    //DrawString(x , y + 30, "X: $" +  hex(nes.cpu.x, 2) + "  [" + std::to_string(nes.cpu.x) + "]");
-    //DrawString(x , y + 40, "Y: $" +  hex(nes.cpu.y, 2) + "  [" + std::to_string(nes.cpu.y) + "]");
-    //DrawString(x , y + 50, "Stack P: $" + hex(nes.cpu.stackPtr, 4));
+    size_t index = 0;
+
+    for (auto &[name, flag] : _cpuFlags) {
+        _text.setPosition(position.x + (index * 20), position.y);
+        _text.setString(name);
+        _text.setFillColor(getCpuFlagStatusColor(flag));
+        _window.draw(_text);
+        ++index;
+    }
+    index = 0;
+    _text.setFillColor(sf::Color::White);
+    const std::array<std::pair<std::string, uint8_t>, 4> _cpuRegisters = {
+            std::make_pair("Register A", nes.cpu.a),
+            std::make_pair("Register X", nes.cpu.x),
+            std::make_pair("Register Y", nes.cpu.y),
+            std::make_pair("Stack Pointer", nes.cpu.stackPtr)
+    };
+    for (auto &[name, value] : _cpuRegisters) {
+        _text.setPosition(position.x, position.y + 30 + (index * 30));
+        _text.setString(name + ": $" + hex(value, 4));
+        _window.draw(_text);
+        ++index;
+    }
 }
 
 void Emulator::drawInstructions(const sf::Vector2i &position,

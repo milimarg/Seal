@@ -15,7 +15,7 @@ Cartridge::Cartridge(const std::string& filepath)
 		char unused[5];
 	} header;
 
-	bImageValid = false;
+	_imageValid = false;
 
 	std::ifstream ifs;
 	ifs.open(filepath, std::ifstream::binary);
@@ -31,10 +31,6 @@ Cartridge::Cartridge(const std::string& filepath)
 
 		uint8_t nFileType = 1;
 
-		if (nFileType == 0) {
-
-		}
-
 		if (nFileType == 1) {
 			PRGBanks = header.prg_rom_chunks;
 			vPRGMemory.resize(PRGBanks * 16384);
@@ -48,35 +44,29 @@ Cartridge::Cartridge(const std::string& filepath)
 			}
 			ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
 		}
-
-		if (nFileType == 2) {
-
-		}
-
 		switch (nMapperID) {
-		case   0: pMapper = std::make_shared<Mapper_000>(PRGBanks, CHRBanks); break;
-		//case   2: pMapper = std::make_shared<Mapper_002>(PRGBanks, CHRBanks); break;
-		//case   3: pMapper = std::make_shared<Mapper_003>(PRGBanks, CHRBanks); break;
-		//case  66: pMapper = std::make_shared<Mapper_066>(PRGBanks, CHRBanks); break;
+		    case 0:
+                _mapper = Factory::createElement<Mapper_000>(PRGBanks, CHRBanks);
+                break;
+            default:
+                break;
 		}
-
-		bImageValid = true;
+		_imageValid = true;
 		ifs.close();
 	}
-
 }
 
 Cartridge::~Cartridge() {}
 
 bool Cartridge::imageValid()
 {
-	return bImageValid;
+	return _imageValid;
 }
 
 bool Cartridge::cpuRead(uint16_t addr, uint8_t &data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->cpuMapRead(addr, mapped_addr)) {
+	if (_mapper->cpuMapRead(addr, mapped_addr)) {
 		data = vPRGMemory[mapped_addr];
 		return true;
 	}
@@ -86,7 +76,7 @@ bool Cartridge::cpuRead(uint16_t addr, uint8_t &data)
 bool Cartridge::cpuWrite(uint16_t addr, uint8_t data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->cpuMapWrite(addr, mapped_addr, data)) {
+	if (_mapper->cpuMapWrite(addr, mapped_addr, data)) {
 		vPRGMemory[mapped_addr] = data;
 		return true;
 	}
@@ -96,7 +86,8 @@ bool Cartridge::cpuWrite(uint16_t addr, uint8_t data)
 bool Cartridge::ppuRead(uint16_t addr, uint8_t & data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->ppuMapRead(addr, mapped_addr)) {
+
+	if (_mapper->ppuMapRead(addr, mapped_addr)) {
 		data = vCHRMemory[mapped_addr];
 		return true;
 	}
@@ -106,7 +97,8 @@ bool Cartridge::ppuRead(uint16_t addr, uint8_t & data)
 bool Cartridge::ppuWrite(uint16_t addr, uint8_t data)
 {
 	uint32_t mapped_addr = 0;
-	if (pMapper->ppuMapWrite(addr, mapped_addr)) {
+
+	if (_mapper->ppuMapWrite(addr, mapped_addr)) {
 		vCHRMemory[mapped_addr] = data;
 		return true;
 	}
@@ -115,6 +107,6 @@ bool Cartridge::ppuWrite(uint16_t addr, uint8_t data)
 
 void Cartridge::reset()
 {
-	if (pMapper != nullptr)
-		pMapper->reset();
+	if (_mapper != nullptr)
+		_mapper->reset();
 }

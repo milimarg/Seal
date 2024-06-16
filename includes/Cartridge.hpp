@@ -5,7 +5,8 @@
     #include <fstream>
     #include <vector>
     #include <memory>
-    #include "../includes/Mapper/Mapper_000.hpp"
+    #include "Mapper/Mapper_000.hpp"
+    #include "Factory.hpp"
 
 class Cartridge {
 public:
@@ -24,7 +25,7 @@ public:
     } mirror = HORIZONTAL;
 
 private:
-    bool bImageValid = false;
+    bool _imageValid = false;
 
     uint8_t nMapperID = 0;
     uint8_t PRGBanks = 0;
@@ -33,7 +34,7 @@ private:
     std::vector<uint8_t> vPRGMemory;
     std::vector<uint8_t> vCHRMemory;
 
-    std::shared_ptr<Mapper> pMapper;
+    std::shared_ptr<Mapper> _mapper;
 
 public:
     bool cpuRead(uint16_t addr, uint8_t &data);

@@ -24,7 +24,7 @@ public:
     void drawRectangle(const sf::IntRect &rect,
                        const sf::Color &color,
                        const sf::Color &borderColor);
-    void update(double fElapsedTime);
+    void update();
     void render();
 
 public:
@@ -41,16 +41,19 @@ public:
     double _timeLoop;
 
     std::string hex(uint32_t n, uint8_t d);
-    void DrawRam(int x, int y, uint16_t nAddr, int nRows, int nColumns);
     void DrawCpu(int x, int y);
     void DrawCode(int x, int y, int nLines);
 
 private:
     void updateControllers();
     void updateKeys();
+    sf::Color getCpuFlagStatusColor(const Cpu::FLAGS6502 flag);
+    void drawCpu(const sf::Vector2i &position);
     void drawInstructions(const sf::Vector2i &position, const int linesNumber);
 
     std::unordered_map<std::string, bool> _antiSpams;
+    const std::string hexValues = "0123456789ABCDEF";
+    std::array<std::pair<std::string, Cpu::FLAGS6502>, 7> _cpuFlags;
 };
 
 #endif //SEAL_EMULATOR_HPP
