@@ -128,17 +128,6 @@ void Emulator::updateKeys()
         (++_selectedPalette) &= 0x07;
 }
 
-std::string Emulator::hex(uint32_t n, uint8_t d)
-{
-    std::string s(d, '0');
-
-    for (int i = d - 1; i >= 0; --i) {
-        s[i] = hexValues[n & 0xF];
-        n >>= 4;
-    }
-    return s;
-}
-
 sf::Color Emulator::getCpuFlagStatusColor(const Cpu::FLAGS6502 flag)
 {
     return nes.cpu.status & flag ? sf::Color::Green : sf::Color::Red;
@@ -165,7 +154,7 @@ void Emulator::drawCpu(const sf::Vector2i &position)
     };
     for (auto &[name, value] : _cpuRegisters) {
         _text.setPosition(position.x, position.y + 30 + (index * 30));
-        _text.setString(name + ": $" + hex(value, 4));
+        _text.setString(name + ": $" + Byte::hex(value, 4));
         _window.draw(_text);
         ++index;
     }

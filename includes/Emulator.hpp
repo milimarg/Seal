@@ -12,6 +12,7 @@
     #include <SFML/System.hpp>
     #include <SFML/Window.hpp>
     #include "Bus.hpp"
+    #include "Byte.hpp"
 
 class Emulator {
 public:
@@ -38,11 +39,6 @@ public:
     sf::RenderWindow &_window;
     sf::Text _text;
     sf::Font _font;
-    double _timeLoop;
-
-    std::string hex(uint32_t n, uint8_t d);
-    void DrawCpu(int x, int y);
-    void DrawCode(int x, int y, int nLines);
 
 private:
     void updateControllers();
@@ -52,8 +48,8 @@ private:
     void drawInstructions(const sf::Vector2i &position, const int linesNumber);
 
     std::unordered_map<std::string, bool> _antiSpams;
-    const std::string hexValues = "0123456789ABCDEF";
     std::array<std::pair<std::string, Cpu::FLAGS6502>, 7> _cpuFlags;
+    double _timeLoop;
 };
 
 #endif //SEAL_EMULATOR_HPP

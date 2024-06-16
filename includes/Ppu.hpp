@@ -19,7 +19,7 @@ private:
     uint8_t		tblPalette[32];
 
 private:
-    sf::Color palScreen[0x40];
+    sf::Color _palScreen[0x40];
     sf::Image sprScreen;
     sf::Image sprPatternTable[2];
 
@@ -82,25 +82,25 @@ private:
         uint16_t reg = 0x0000;
     };
 
-    loopy_register vram_addr;
-    loopy_register tram_addr;
+    loopy_register _vramAddr;
+    loopy_register _tramAddr;
 
-    uint8_t fine_x = 0x00;
+    uint8_t _fineX = 0x00;
 
-    uint8_t address_latch = 0x00;
-    uint8_t ppu_data_buffer = 0x00;
+    uint8_t _addressLatch = 0x00;
+    uint8_t _ppuDataBuffer = 0x00;
 
-    int16_t scanline = 0;
-    int16_t cycle = 0;
+    int16_t _scanline = 0;
+    int16_t _cycle = 0;
 
-    uint8_t bg_next_tile_id     = 0x00;
-    uint8_t bg_next_tile_attrib = 0x00;
-    uint8_t bg_next_tile_lsb    = 0x00;
-    uint8_t bg_next_tile_msb    = 0x00;
-    uint16_t bg_shifter_pattern_lo = 0x0000;
-    uint16_t bg_shifter_pattern_hi = 0x0000;
-    uint16_t bg_shifter_attrib_lo  = 0x0000;
-    uint16_t bg_shifter_attrib_hi  = 0x0000;
+    uint8_t _bgNextTileId     = 0x00;
+    uint8_t _bgNextTileAttribute = 0x00;
+    uint8_t _bgNextTileLst    = 0x00;
+    uint8_t _bgNextTileMsb    = 0x00;
+    uint16_t _bgShifterPatternLow = 0x0000;
+    uint16_t _bgShifterPatternHigh = 0x0000;
+    uint16_t _bgShifterAttributeLow  = 0x0000;
+    uint16_t _bgShifterAttributeHigh  = 0x0000;
 
 public:
     uint8_t cpuRead(uint16_t addr, bool rdonly = false);

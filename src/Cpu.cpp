@@ -801,34 +801,34 @@ std::map<uint16_t, std::string> Cpu::disassemble(uint16_t nStart, uint16_t nStop
 
 	while (address <= (uint32_t)nStop) {
 		line_addr = address;
-		std::string sInst = "$" + hex(address, 4) + ": ";
+		std::string sInst = "$" + Byte::hex(address, 4) + ": ";
 		uint8_t opcode = bus->cpuRead(address, true); address++;
 		sInst += lookup[opcode].name + " ";
 		if (lookup[opcode].addrmode == &Cpu::IMP) {
 			sInst += " {IMP}";
 		} else if (lookup[opcode].addrmode == &Cpu::IMM) {
 			value = bus->cpuRead(address, true); address++;
-			sInst += "#$" + hex(value, 2) + " {IMM}";
+			sInst += "#$" + Byte::hex(value, 2) + " {IMM}";
 		} else if (lookup[opcode].addrmode == &Cpu::ZP0) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = 0x00;												
-			sInst += "$" + hex(lo, 2) + " {ZP0}";
+			sInst += "$" + Byte::hex(lo, 2) + " {ZP0}";
 		} else if (lookup[opcode].addrmode == &Cpu::ZPX) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = 0x00;														
-			sInst += "$" + hex(lo, 2) + ", X {ZPX}";
+			sInst += "$" + Byte::hex(lo, 2) + ", X {ZPX}";
 		} else if (lookup[opcode].addrmode == &Cpu::ZPY) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = 0x00;														
-			sInst += "$" + hex(lo, 2) + ", Y {ZPY}";
+			sInst += "$" + Byte::hex(lo, 2) + ", Y {ZPY}";
 		} else if (lookup[opcode].addrmode == &Cpu::IZX) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = 0x00;								
-			sInst += "($" + hex(lo, 2) + ", X) {IZX}";
+			sInst += "($" + Byte::hex(lo, 2) + ", X) {IZX}";
 		} else if (lookup[opcode].addrmode == &Cpu::IZY) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = 0x00;								
-			sInst += "($" + hex(lo, 2) + "), Y {IZY}";
+			sInst += "($" + Byte::hex(lo, 2) + "), Y {IZY}";
 		} else if (lookup[opcode].addrmode == &Cpu::ABS) {
 			lo = bus->cpuRead(address, true); address++;
 			hi = bus->cpuRead(address, true); address++;
@@ -847,7 +847,7 @@ std::map<uint16_t, std::string> Cpu::disassemble(uint16_t nStart, uint16_t nStop
 			sInst += "($" + hex((uint16_t)(hi << 8) | lo, 4) + ") {IND}";
 		} else if (lookup[opcode].addrmode == &Cpu::REL) {
 			value = bus->cpuRead(address, true); address++;
-			sInst += "$" + hex(value, 2) + " [$" + hex(address + (int8_t)value, 4) + "] {REL}";
+			sInst += "$" + Byte::hex(value, 2) + " [$" + Byte::hex(address + (int8_t)value, 4) + "] {REL}";
 		}
 		mapLines[line_addr] = sInst;
 	}

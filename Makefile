@@ -5,7 +5,8 @@ SRC		=	src/main.cpp \
 			src/Cartridge.cpp \
 			src/Mapper/Mapper.cpp \
 			src/Mapper/Mapper_000.cpp \
-			src/Emulator.cpp
+			src/Emulator.cpp \
+			src/Byte.cpp
 
 OBJ		=	$(SRC:.cpp=.o)
 
