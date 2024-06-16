@@ -66,7 +66,7 @@ private:
         uint8_t     cycles = 0;
     };
 
-    std::vector<INSTRUCTION> lookup;
+    std::vector<INSTRUCTION> _lookup;
 
 private:
     uint8_t IMP(); uint8_t IMM();

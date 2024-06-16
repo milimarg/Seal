@@ -454,8 +454,10 @@ void Ppu::clock()
         }
         if (_cycle == 340) {
             for (uint8_t i = 0; i < sprite_count; ++i) {
-                uint8_t sprite_patterns_bits_lo, sprite_patterns_bits_hi;
-                uint16_t sprite_patterns_addr_lo, sprite_patterns_addr_hi;
+                uint8_t sprite_patterns_bits_lo = 0x00;
+                uint8_t sprite_patterns_bits_hi = 0x00;
+                uint16_t sprite_patterns_addr_lo = 0x0000;
+                uint16_t sprite_patterns_addr_hi = 0x0000;
                 if (!control.sprite_size) {
                     if (!(spriteScanline[i].attribute & 0x80)) {
                         sprite_patterns_addr_lo =

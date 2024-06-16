@@ -126,7 +126,7 @@ public:
     bool nmi = false;
     uint8_t *OAMPtr = (uint8_t *)&OAM[0];
     uint8_t oam_addr = 0x00;
-    sObjectAttributeEntry spriteScanline[8];
+    sObjectAttributeEntry spriteScanline[8] = {0};
     uint8_t sprite_count;
     uint8_t sprite_shifter_pattern_lo[8];
     uint8_t sprite_shifter_pattern_hi[8];
