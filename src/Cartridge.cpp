@@ -20,40 +20,40 @@ Cartridge::Cartridge(const std::string& filepath)
 	std::ifstream ifs;
 	ifs.open(filepath, std::ifstream::binary);
 
-	if (ifs.is_open()) {
-		ifs.read((char*)&header, sizeof(sHeader));
+    if (!ifs.is_open()) {
+        std::cerr << "Failed to create Cartridge..." << std::endl;
+        return;
+    }
 
-		if (header.mapper1 & 0x04)
-			ifs.seekg(512, std::ios_base::cur);
+    ifs.read((char*)&header, sizeof(sHeader));
 
-		nMapperID = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
-		mirror = (header.mapper1 & 0x01) ? VERTICAL : HORIZONTAL;
+    if (header.mapper1 & 0x04)
+        ifs.seekg(512, std::ios_base::cur);
 
-		uint8_t nFileType = 1;
+    nMapperID = ((header.mapper2 >> 4) << 4) | (header.mapper1 >> 4);
+    mirror = (header.mapper1 & 0x01) ? VERTICAL : HORIZONTAL;
 
-		if (nFileType == 1) {
-			PRGBanks = header.prg_rom_chunks;
-			vPRGMemory.resize(PRGBanks * 16384);
-			ifs.read((char*)vPRGMemory.data(), vPRGMemory.size());
+    PRGBanks = header.prg_rom_chunks;
+    vPRGMemory.resize(PRGBanks * 16384);
+    ifs.read((char*)vPRGMemory.data(), vPRGMemory.size());
 
-			CHRBanks = header.chr_rom_chunks;
-			if (CHRBanks == 0) {
-				vCHRMemory.resize(8192);
-			} else {
-				vCHRMemory.resize(CHRBanks * 8192);
-			}
-			ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
-		}
-		switch (nMapperID) {
-		    case 0:
-                _mapper = Factory::createElement<Mapper_000>(PRGBanks, CHRBanks);
-                break;
-            default:
-                break;
-		}
-		_imageValid = true;
-		ifs.close();
-	}
+    CHRBanks = header.chr_rom_chunks;
+    if (CHRBanks == 0) {
+        vCHRMemory.resize(8192);
+    } else {
+        vCHRMemory.resize(CHRBanks * 8192);
+    }
+    ifs.read((char*)vCHRMemory.data(), vCHRMemory.size());
+
+    switch (nMapperID) {
+        case 0:
+            _mapper = Factory::createElement<Mapper_000>(PRGBanks, CHRBanks);
+            break;
+        default:
+            break;
+    }
+    _imageValid = true;
+    ifs.close();
 }
 
 Cartridge::~Cartridge() {}

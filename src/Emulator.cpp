@@ -7,10 +7,8 @@
 
 #include "../includes/Emulator.hpp"
 
-Emulator::Emulator(sf::RenderWindow &window, const std::string &romFilepath)
-    : _window(window),
-    _romFilepath(romFilepath),
-    _antiSpams({
+Emulator::Emulator()
+    : _antiSpams({
         {"SPACE", false},
         {"F", false}
     }),
@@ -22,16 +20,44 @@ Emulator::Emulator(sf::RenderWindow &window, const std::string &romFilepath)
         {"I", Cpu::FLAGS6502::I}, // has interrupted?
         {"Z", Cpu::FLAGS6502::Z}, // is zero?
         {"C", Cpu::FLAGS6502::C}  // has carry?
-    })
+    }) {}
+
+Emulator::~Emulator() {}
+
+Emulator &Emulator::getInstance()
 {
-    if (!nes.insertCartridge(_romFilepath))
-        return;
+    static Emulator emulator;
+    return emulator;
+}
+
+bool Emulator::init()
+{
+    if (!nes.insertCartridge(_romFilepath)) {
+        std::cerr << "Nes failed to insert cartridge..." << std::endl;
+        return false;
+    }
     _asm = nes.cpu.disassemble(0x0000, 0xFFFF);
     _font.loadFromFile("./Roboto-Regular.ttf");
     _text.setCharacterSize(20);
     _text.setFont(_font);
     _vertexArray.setPrimitiveType(sf::Quads);
     nes.reset();
+    return true;
+}
+
+void Emulator::setWindow(std::shared_ptr<sf::RenderWindow> window)
+{
+    _window = window;
+}
+
+void Emulator::setRomFilepath(const std::string &filepath)
+{
+    _romFilepath = filepath;
+}
+
+std::shared_ptr<sf::RenderWindow> Emulator::getWindow()
+{
+    return _window;
 }
 
 void Emulator::drawImage(const sf::Image &image,
@@ -94,7 +120,7 @@ void Emulator::render()
     drawCpu({1300, 10});
     drawInstructions({1600, 40}, 22);
     drawImage(nes.ppu.GetScreen(), {0, 0}, {4, 4});
-    _window.draw(_vertexArray);
+    _window->draw(_vertexArray);
 }
 
 void Emulator::updateControllers()
@@ -137,7 +163,7 @@ void Emulator::drawCpu(const sf::Vector2i &position)
         _text.setPosition(position.x + (index * 20), position.y);
         _text.setString(name);
         _text.setFillColor(getCpuFlagStatusColor(flag));
-        _window.draw(_text);
+        _window->draw(_text);
         ++index;
     }
     index = 0;
@@ -151,7 +177,7 @@ void Emulator::drawCpu(const sf::Vector2i &position)
     for (auto &[name, value] : _cpuRegisters) {
         _text.setPosition(position.x, position.y + 30 + (index * 30));
         _text.setString(name + ": $" + Byte::hex(value, 4));
-        _window.draw(_text);
+        _window->draw(_text);
         ++index;
     }
 }
@@ -166,14 +192,14 @@ void Emulator::drawInstructions(const sf::Vector2i &position,
         _text.setPosition(position.x, nLineY);
         _text.setString(it->second);
         _text.setFillColor(sf::Color::Magenta);
-        _window.draw(_text);
+        _window->draw(_text);
         while (nLineY < (linesNumber * 10) + position.y) {
             nLineY += 25;
             if (++it != _asm.end()) {
                 _text.setPosition(position.x, nLineY);
                 _text.setString(it->second);
                 _text.setFillColor(sf::Color::White);
-                _window.draw(_text);
+                _window->draw(_text);
             }
         }
     }
@@ -186,7 +212,7 @@ void Emulator::drawInstructions(const sf::Vector2i &position,
                 _text.setPosition(position.x, nLineY);
                 _text.setString(it->second);
                 _text.setFillColor(sf::Color::White);
-                _window.draw(_text);
+                _window->draw(_text);
             }
         }
     }

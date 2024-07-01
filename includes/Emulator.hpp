@@ -16,9 +16,13 @@
 
 class Emulator {
 public:
-    Emulator(sf::RenderWindow &window, const std::string &romFilepath);
+    static Emulator &getInstance();
+    bool init();
 
-    // TODO: use the same object to draw multiple ones
+    void setWindow(std::shared_ptr<sf::RenderWindow> window);
+    void setRomFilepath(const std::string &filepath);
+    std::shared_ptr<sf::RenderWindow> getWindow();
+
     void drawImage(const sf::Image &image,
                    const sf::Vector2f &position = sf::Vector2f(0, 0),
                    const sf::Vector2f &scale = sf::Vector2f(1, 1));
@@ -28,19 +32,20 @@ public:
     void update();
     void render();
 
-public:
     Bus nes;
     std::shared_ptr<Cartridge> _cartridge;
     bool _runningEmulation = false;
     float fResidualTime = 0.0f;
     uint8_t _selectedPalette = 0x00;
     std::map<uint16_t, std::string> _asm;
-    const std::string &_romFilepath;
-    sf::RenderWindow &_window;
+    std::string _romFilepath;
+    std::shared_ptr<sf::RenderWindow> _window;
     sf::Text _text;
     sf::Font _font;
 
 private:
+    Emulator();
+    ~Emulator();
     void updateControllers();
     void updateKeys();
     sf::Color getCpuFlagStatusColor(const Cpu::FLAGS6502 flag);
