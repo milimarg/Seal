@@ -6,11 +6,14 @@ Dependencies:
 - SFML 2.6.1
 
 Controls:
-- X: A
-- Z: B
-- A: Select
-- S: Start
-- Up: Up arrow
-- Down: Down Arrow
-- Left: Left arrow
-- Right: Right arrow
+
+| Your PC     | Emulator |
+|-------------|----------|
+| X           | A        |
+| Z           | B        |
+| A           | Select   |
+| S           | Start    |
+| Up arrow    | Up       |
+| Down arrow  | Down     |
+| Left arrow  | Left     |
+| Right arrow | Right    |
