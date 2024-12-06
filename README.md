@@ -7,6 +7,8 @@ Dependencies:
 
 Controls:
 
+`Space` to pause/remuse emulation
+
 | Your PC     | Emulator |
 |-------------|----------|
 | X           | A        |
